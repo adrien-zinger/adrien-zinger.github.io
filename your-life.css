@@ -1,0 +1,173 @@
+/**
+ * Normalize
+ */
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+body {
+  font-family: Helvetica, Ariel, sans-serif;
+  background-color: #1e1e20;
+}
+
+/**
+* Common Page Styles
+*/
+.title-box {
+  padding-top: 1rem;
+  text-align: center;
+}
+.title {
+  display: inline;
+  color: #7a7a7a;
+}
+.chart {
+  position: relative;
+  margin: 4rem auto 2rem auto;
+  padding: 0;
+  list-style-type: none;
+}
+.x-axis {
+  position: absolute;
+  top: -2.75em;
+  height: 2.75em;
+  width: 100%;
+}
+.x-axis .markers,
+.y-axis .markers {
+  font-size: 0.8rem;
+  color: black;
+}
+.credits {
+  font-size: 0.8rem;
+  text-align: center;
+  color: #aaaaaa;
+  padding-bottom: 1rem;
+}
+.credits a:link,
+.credits a:hover,
+.credits a:visited {
+  color: #aaaaaa;
+}
+
+
+
+/**
+* Page Specific styles
+*/
+/* INDEX */
+.index {
+  text-align: center;
+  margin: 25vh auto 0;
+  padding: 0;
+}
+.index li {
+  font-size: 2.5em;
+}
+
+/* WEEKS */
+.weeks {
+  max-width: 624px; /* 12px per week * 52weeks = 624px */
+}
+.weeks > li {
+  border: 1px solid black;
+  width: 1.382051282%; /* 8px/624px */
+  padding-bottom: .961538462%; /* 6px/624px */
+  margin: .220512821%; /* 2px/624px */
+  float: left;
+  background-color: #242425;
+  border-color: #1e1f20;
+}
+.weeks--x-label {
+  color: #000080;
+  font-size: 1.25rem;
+}
+.weeks--y-label {
+  color: #000080;
+  transform: rotate(-90deg);
+  font-size: 1.25rem;
+  position: absolute;
+  left: -118px;
+  top: 78px;
+}
+.weeks--x-markers span {
+  position: absolute;
+  bottom: 0;
+}
+/* The year is divided into 52 weeks, so the % marker location //
+// can be found at (1/52)n (where n is the week number). We    //
+// must offset by 1 because we start counting at 1, so the     //
+// final equation is (n/52)-(1/52)                             */
+.weeks--x-markers span:nth-of-type(1) { left: 0;             }
+.weeks--x-markers span:nth-of-type(2) { left: 7.6923076920%; }
+.weeks--x-markers span:nth-of-type(3) { left: 17.307692308%; }
+.weeks--x-markers span:nth-of-type(4) { left: 26.923076923%; }
+.weeks--x-markers span:nth-of-type(5) { left: 36.538461538%; }
+.weeks--x-markers span:nth-of-type(6) { left: 46.153846154%; }
+.weeks--x-markers span:nth-of-type(7) { left: 55.769230769%; }
+.weeks--x-markers span:nth-of-type(8) { left: 65.384615385%; }
+.weeks--x-markers span:nth-of-type(9) { left: 75%;           }
+.weeks--x-markers span:nth-of-type(10) { left: 84.615384615%; }
+.weeks--x-markers span:nth-of-type(11) { left: 94.230769231%; }
+
+.weeks--y-markers span {
+position: absolute;
+left: -1.25em;
+}
+
+.weeks--y-markers span:nth-of-type(1) { top: 0; } /* (n/90) */
+.weeks--y-markers span:nth-of-type(2) { top: 5.555555556%; }
+.weeks--y-markers span:nth-of-type(3) { top: 11.111111111%; }
+.weeks--y-markers span:nth-of-type(4) { top: 16.666666667%; }
+.weeks--y-markers span:nth-of-type(5) { top: 22.222222222%; }
+.weeks--y-markers span:nth-of-type(6) { top: 27.777777778%; }
+.weeks--y-markers span:nth-of-type(7) { top: 33.333333333%; }
+.weeks--y-markers span:nth-of-type(8) { top: 38.888888889%; }
+.weeks--y-markers span:nth-of-type(9) { top: 44.444444444%; }
+.weeks--y-markers span:nth-of-type(10) { top: 50%; }
+.weeks--y-markers span:nth-of-type(11) { top: 55.555555556%; }
+.weeks--y-markers span:nth-of-type(12) { top: 61.111111111%; }
+.weeks--y-markers span:nth-of-type(13) { top: 66.666666667%; }
+.weeks--y-markers span:nth-of-type(14) { top: 72.222222222%; }
+.weeks--y-markers span:nth-of-type(15) { top: 77.777777778%; }
+.weeks--y-markers span:nth-of-type(16) { top: 83.333333333%; }
+.weeks--y-markers span:nth-of-type(17) { top: 88.888888889%; }
+.weeks--y-markers span:nth-of-type(18) { top: 94.444444444%; }
+.weeks--y-markers span:nth-of-type(19) {
+bottom: -1em;
+left: 100%;
+font-size: 1.5em;
+font-weight: bold;
+}
+
+/**
+* Utilities
+*/
+.group:after {
+  /* "group" is another name for clearfix */
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* see http://snook.ca/archives/html_and_css/hiding-content-for-accessibility */
+.visuallyhidden {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  height: 1px; width: 1px;
+  margin: -1px; padding: 0; border: 0;
+}
+
+#legend {
+  font-size: 15px;
+  color: rgb(158, 158, 158);
+  list-style: none;
+  padding-right: 15px;
+}
+
+pre {
+  margin: 0px;
+}
