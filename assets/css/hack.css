@@ -54,13 +54,13 @@ pre code {
 
 a {
     cursor: pointer;
-    color: #ff2e88;
+    color: rgb(112, 146, 123);
     text-decoration: none;
-    border-bottom: 1px solid #ff2e88
+    border-bottom: 2px solid rgb(112, 146, 123)
 }
 
 a:hover {
-    background-color: #ff2e88;
+    background-color: rgb(112, 146, 123);
     color: #fff
 }
 
