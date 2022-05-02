@@ -3,34 +3,25 @@ layout: default
 permalink: /
 ---
 
-# Cappuccino
+## Cappuccino ☕
 
-## Presentation ☕
+I present myself, I'm a computer scientist, I love discover any technology about informatic.
+And sometimes, I have questions. Instead of keeping my reflexion, I just learn and test my
+knowledge.
 
-Cappuccino is a free organisation focused on technological watch
-- Rust \| C++ \| C \| WebAssembly
-- Decentralised networking
-- Nix \| NixOS \| NixOps \| DevOps as a Service
-- React.js \| React Native
+The purpose of that blog, broadcast my reflexions, projects and other feedbacks.
 
+Many of posts are based on *Rust* or *C/C++* code.
 
-[GitHub](https://github.com/cppccn) / [Yvan Sraka](https://github.com/yvan-sraka) / [Adrien Zinger](https://github.com/adrien-zinger)
+Cappuccino is the result of a collaboration between several friends that are very good engeneers.
+Look at the github page [cppccn](https://github.com/cppccn).
 
 ## Posts
 
 {% for post in site.posts %}
-* [{{ post.title }}]({{ post.url }}) - <i>By:{% for author in post.authors %} {{author}};{% endfor %}</i>
-<br/>
+* [{{ post.title }}]({{ post.url }})
 <br/>
 {{ post.description }}
-{% if post.reviewers %}
-
-<i>Reviewers: {% for reviewer in post.reviewers %} {{reviewer}};{% endfor %}</i>
-
-{% endif %}
+<br/>
+<br/>
 {% endfor %}
-
-
-## About this page
-
-This page is written in [Markdown](https://daringfireball.net/projects/markdown/), hosted by [GitHub Page](https://pages.github.com/), automatically converted to HTML by [Jekyll](https://jekyllrb.com) and looks like the authentic Markdown through [a fork of Hack CSS](https://github.com/yvan-sraka/hack), you can find the sources [here](https://github.com/yvan-sraka/yvan-sraka.github.io).

@@ -1,8 +1,8 @@
 ---
 layout: default
-title:  "That is not about <i>lazy_static</i>"
+title:  "That is not about the <i>lazy_static</i> crate"
 description: "
-Lazy static in rust can be something strange to immagine. In other languages,
+Lazy static in <i><b>Rust</b></i> can be something strange to think. In other languages,
 you feel free to do a lot of things, dirty or not I don't judge you, with your
 memory...
 <a href='./2022/04/07/lazy-or-not-lazy.html'>continue to read</a>"

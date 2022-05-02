@@ -1,6 +1,6 @@
 ---
 layout: default
-title:  "📉 Asynchronous futures vs Synchronous locks"
+title:  "📉 Asynchronous futures vs Synchronous locks in Rust"
 description: "When we're working on a project, and we want to accelerate the process, we may think about parallelism and concurrency...
 <a href='./2022/01/14/benchmark-async.html'>continue to read</a>"
 
