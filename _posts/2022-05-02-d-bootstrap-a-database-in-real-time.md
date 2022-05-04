@@ -1,14 +1,16 @@
 ---
 layout: default
-title:  "Bootstrap a database in real time"
+title:  "Bootstrap a database in real time 4/4"
 description: "
 Studying some theoretical bootstrap methods in a <i>P2P</i> network.
-My feedback about the two previous solutions (Polling vs Webhook) 4/4 <br/>
-<a href='./2022/05/02/d-bootstrap-a-database-in-real-time.html'>continue to read</a>"
+My feedback about the two previous solutions (Polling vs Webhook) 4/4"
 
 authors: ["Adrien Zinger"]
 comments_id: 4
 ---
+
+> If you had read the previous post from [the beginning](/2022/05/02/a-bootstrap-a-database-in-real-time.html)
+> you would already have an opinion. Here is mine, share yours in a comments :-)
 
 ## About the two solutions
 In an unstructured P2P network, we can find a lot of

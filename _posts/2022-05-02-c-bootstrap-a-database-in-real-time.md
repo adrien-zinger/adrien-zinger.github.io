@@ -1,10 +1,9 @@
 ---
 layout: default
-title:  "Bootstrap a database in real time"
+title:  "Bootstrap a database in real time 3/4"
 description: "
-Studying some theorical bootstrap methods in a <i>P2P</i> network.
-Use a polling strategy with a <i>BTreeMap</i> 3/4<br/>
-<a href='./2022/05/02/c-bootstrap-a-database-in-real-time.html'>continue to read</a>"
+Studying some theoretical bootstrap methods in a <i>P2P</i> network.
+Use a polling strategy with a <i>BTreeMap</i> 3/4"
 
 authors: ["Adrien Zinger"]
 comments_id: 3

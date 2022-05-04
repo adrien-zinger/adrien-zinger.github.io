@@ -1,10 +1,9 @@
 ---
 layout: default
-title:  "Bootstrap a database in real time"
+title:  "Bootstrap a database in real time 2/4"
 description: "
-Studying some theorical bootstrap methods in a <i>P2P</i> network.
-Use a webhook strategy with a <i>BTreeMap</i> 2/4<br/>
-<a href='./2022/05/02/b-bootstrap-a-database-in-real-time.html'>continue to read</a>"
+Studying some theoretical bootstrap methods in a <i>P2P</i> network.
+Use a webhook strategy with a <i>BTreeMap</i> 2/4"
 
 authors: ["Adrien Zinger"]
 comments_id: 2
