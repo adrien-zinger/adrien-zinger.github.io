@@ -7,6 +7,7 @@ Use a polling strategy with a <i>BTreeMap</i> 3/4<br/>
 <a href='./2022/05/02/c-bootstrap-a-database-in-real-time.html'>continue to read</a>"
 
 authors: ["Adrien Zinger"]
+comments_id: 3
 ---
 
 ## Polling solution

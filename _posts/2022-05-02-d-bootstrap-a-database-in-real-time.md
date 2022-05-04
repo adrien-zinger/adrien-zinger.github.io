@@ -2,11 +2,12 @@
 layout: default
 title:  "Bootstrap a database in real time"
 description: "
-Studying some theorical bootstrap methods in a <i>P2P</i> network.
+Studying some theoretical bootstrap methods in a <i>P2P</i> network.
 My feedback about the two previous solutions (Polling vs Webhook) 4/4 <br/>
 <a href='./2022/05/02/d-bootstrap-a-database-in-real-time.html'>continue to read</a>"
 
 authors: ["Adrien Zinger"]
+comments_id: 4
 ---
 
 ## About the two solutions
@@ -44,7 +45,7 @@ that case, a comment is better than a PR.
 
 Any PR should focus on simplicity for the example study. Don't include flavours
 like error management, memory optimization, etc. Instead, you would rather
-change the datastructures, namings, code organization, rectify the algorithm if
+change the data structures, namings, code organization, rectify the algorithm if
 you found a mistake, add documentation, test cases, resolve _todo comments_.
 
 Look first if your comment is off the subject, but post it anyway with the

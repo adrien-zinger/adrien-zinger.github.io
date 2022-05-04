@@ -7,6 +7,7 @@ Which are the data structures, introduction... 1/4<br/>
 <a href='./2022/05/02/a-bootstrap-a-database-in-real-time.html'>continue to read</a>"
 
 authors: ["Adrien Zinger"]
+comments_id: 1
 ---
 
 

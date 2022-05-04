@@ -9,6 +9,7 @@ memory...
 
 authors: ["Adrien Zinger"]
 reviewers: ["Yvan Sraka"]
+comments_id: 5
 ---
 
 # I'll not present the lazy_static crate
@@ -23,8 +24,8 @@ the checked lifetime and the coherency of variables.
 Don't mess with the rust compiler, there are some rules you have to respect:
 1. The type of static should be known at compiletime
 2. A static variable should have an initial value
-3. If immutable, the variable sould implement the `Sync` trait
-4. If mutable, the vaiable is usable in unsafe blocks only
+3. If immutable, the variable should implement the `Sync` trait
+4. If mutable, the variable is usable in unsafe blocks only
 
 A basic example of a static global variable with an interior mutability usable
 in a safe block:

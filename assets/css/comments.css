@@ -1,0 +1,56 @@
+#gh-comments-list {
+    list-style: none;
+    list-style-type: none;
+}
+
+#gh-comments-list>li {
+    margin: 0;
+    padding: 1.5em 0;
+    display: flex;
+    flex-wrap: wrap;
+    border-top: 1px solid #aaa;
+}
+
+#gh-comments-list li>a.user {
+    width: 2.5em;
+    height: 2.5em;
+    overflow: hidden;
+}
+
+#gh-comments-list li>a.user img {
+    width: 40px;
+    height: 40px;
+}
+
+#gh-comments-list li>a.comment-url {
+    width: 100%;
+    text-align: right;
+    font-size: 0.6em;
+    opacity: 0.5;
+}
+
+#gh-comments-list>li>a.comment-url:hover {
+    opacity: 1;
+}
+
+#gh-comments-list>li .comment-content {
+    padding: 0 1.5em;
+}
+
+/*
+#leave-a-comment {
+    color: #fff;
+    padding: 1rem;
+}
+
+#leave-a-comment a {
+    color: #fff;
+    border-bottom-color: #fff;
+    outline-color: #fff;
+}
+
+#no-comments-found {
+    font-size: 0.8rem;
+    display: none;
+}
+*/

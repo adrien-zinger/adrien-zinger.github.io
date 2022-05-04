@@ -34,7 +34,7 @@ async fn tokio_test_bench() {
 
 We can discuss eventually about the quality of this code, I'm pretty sure that we can think it's weird. Well, I think it's pretty unusual because to test this, I need to use a synchronous variable, which I lock synchronously and then continue the job. It's just a unit test, so I can justify the odd design by the correctness.
 
-But yesterday, I looked at a comment in the _Rust for Rustacean_ book. The comment said that, I should be careful because of the waste of time when I wait synchronous code in a future. _"That's exactly my problem!!" - me in the train_
+But yesterday, I looked at a comment in the _Rust for Rustocean_ book. The comment said that, I should be careful because of the waste of time when I wait synchronous code in a future. _"That's exactly my problem!!" - me in the train_
 
 
 ## Reproduce the problem and check
@@ -209,5 +209,5 @@ You can see the single thread with full concurrency as the slower algorithm. The
 
 ---
 
-[^1]: The reason why this callback is synchronous is because I couldn't safelly send a future between spawned thread and the design may be rethinked in a while.
+[^1]: The reason why this callback is synchronous is because I couldn't safely send a future between spawned thread and the design may be enhanced in a while.
 [^2]: By runtime I mean the tokio runtime that execute concurrency

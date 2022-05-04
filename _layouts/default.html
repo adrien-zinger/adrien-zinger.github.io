@@ -10,11 +10,16 @@
   <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/hack.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/dark-grey.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/site-dark.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/comments.css" />
 </head>
 
 <body class="hack dark-grey">
   <div class="main container">
     {{ content }}
+
+    {% if page.comments_id %}
+    {% include comments.html %}
+    {% endif %}
   </div>
 </body>
 

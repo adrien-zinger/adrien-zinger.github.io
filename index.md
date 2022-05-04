@@ -3,4 +3,9 @@ layout: index
 permalink: /
 ---
 
-##### Blog posts C/C++/Rust [&rarr;](posts.html)
+##### My Blog
+
+<br />
+**[POSTS](posts.html)**
+<br />
+<br />

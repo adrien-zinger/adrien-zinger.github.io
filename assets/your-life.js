@@ -16,7 +16,7 @@ function draw(start, end, options) {
   }
 }
 
-const birthdate = new Date("1992", "16", "12");
+const birthday = new Date("1992", "16", "12");
 let life_in_json = [
   // periodes
   {
@@ -34,7 +34,7 @@ let life_in_json = [
     id: 3,
     from: new Date("2012", "8", "1"),
     to: new Date("2016", "9", "10"),
-    title: "Studies & informatic engineering 📚",
+    title: "Studies & informatics engineering 📚",
     tag: '<i><b>Computer science</b></i> 🖥️',
     options: {
       color: '#29779b',
@@ -87,7 +87,7 @@ let life_in_json = [
     id: 12,
     from: new Date("2021", "8", "30"),
     to: new Date(),
-    title: "Working on distributed/decentralised networking",
+    title: "Working on distributed/decentralized networking",
     tag: '<i><b>Computer science</b></i> 🖥️',
     options: {},
   },
@@ -95,7 +95,7 @@ let life_in_json = [
   // dates
   {
     id: 1,
-    from: birthdate,
+    from: birthday,
     to: new Date("2010", "8", "1"),
     tag: '<i><b>Important dates</i></b>',
     title: "🎶 Childhood in France & insouciance :-) 🎶",
@@ -175,13 +175,13 @@ function reset(id) {
       filtered = i;
       return;
     }
-    let from = calculateElapsedTime(birthdate, i.from);
-    let to = calculateElapsedTime(birthdate, i.to);
+    let from = calculateElapsedTime(birthday, i.from);
+    let to = calculateElapsedTime(birthday, i.to);
     draw(from, to, i.options);
   });
   if (filtered) {
-    let from = calculateElapsedTime(birthdate, filtered.from);
-    let to = calculateElapsedTime(birthdate, filtered.to);
+    let from = calculateElapsedTime(birthday, filtered.from);
+    let to = calculateElapsedTime(birthday, filtered.to);
     draw(from, to, { color: 'white', border: 'white' });
     items[0].scrollIntoView({ behavior: "smooth" });
   }
