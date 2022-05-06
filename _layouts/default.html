@@ -6,6 +6,9 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Adrien Zinger - Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% if page.scripts %}
+  {{ page.scripts }}
+  {% endif %}
   <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/monokai.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/hack.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/dark-grey.css" />
