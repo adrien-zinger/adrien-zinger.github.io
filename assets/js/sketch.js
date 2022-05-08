@@ -8,6 +8,7 @@ function setup() {
     }
     frameRate(FRAME_RATE);
     Node.connections();
+    nodes[0].changeColor();
 }
 
 function draw() {

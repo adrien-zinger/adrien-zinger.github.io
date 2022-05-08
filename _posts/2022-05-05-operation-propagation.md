@@ -86,14 +86,16 @@ insertOpKey(key) {
 
 So, the last `sort` is very useful for the second and last part of the algorithm!
 It gave me that strategical order.
+
+The table `this.known` look's like that:
 <div style="font-size:30px; line-height:auto;">
-<span style="font-size:23px;">youngest data or fakes</span> <<<<<<
+<span style="font-size:20px;">youngest data (or fake)</span> <<<<<<
 <br/>
->>>>>> <span style="font-size:23px;">oldest data with a lot of replication, probably not a fake</span>
+>>>>>> <span style="font-size:20px;">oldest data with a lot of replication (probably not a fake)</span>
 </div>
 
-Actually, more we heard about a data, more it will be easy to find it. But we could also ask to the last
-senders of the ids directly when we want to get the data.
+Actually, more we heard about a data, more it will be easy to find it. But we could also ask to the latest
+senders of the ids directly when we want to get the data!
 
 ```js
 peek() {
@@ -110,7 +112,11 @@ peek() {
 },
 ```
 
-Thank's for reading! I hope you'll appreciate that little introduction. You can
+---
+
+### Thank's!
+
+Thank you for reading! If you appreciate that little P2P introduction. You can
 find the full code of the preview on my blog repository in the following paths:
 
 ```bash

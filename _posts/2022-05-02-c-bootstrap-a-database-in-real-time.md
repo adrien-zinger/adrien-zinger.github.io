@@ -136,11 +136,11 @@ itself if he is enough up to date (in a _Stale_ state).
 Polling takes bandwidth, consider that instead of one call, we need to
 continuously fetch chunks of data and keep a local state.
 
-We cannot just increase the fetch calls period, because in a real production,
-the cache just can't contain all modifications. Imagine that the bootstrapper
-node (the one that fetch), makes too many times between two fetches:
-The remote can have lost some historic modifications and there is no reasonable
-way to retrieve them. So the fetcher need to restart a full bootstrap.
+We cannot just increase the fetch calls period, because in the real life,
+the cache can't contain all modifications. Consider that the bootstrapper
+node (the one that fetch) takes too long between two fetches:
+The remote would have lost some modifications and there is no reasonable
+way to retrieve them. So the fetcher need to restart a full bootstrap?
 
 The multithreading of the bootstrap is not as easy as the webhook solution.
 If the head increase monotonically, we can update ourselves with the
