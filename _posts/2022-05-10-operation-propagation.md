@@ -16,6 +16,7 @@ scripts: "
 <script src=\"/assets/js/node.js\"></script>
 <script src=\"/assets/js/sketch.js\"></script>
 "
+comments_id: 6
 ---
 
 ## Data propagation with unstructured P2P
