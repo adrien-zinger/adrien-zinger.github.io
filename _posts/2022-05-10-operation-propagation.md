@@ -23,20 +23,19 @@ comments_id: 6
 
 <div id="can" style="width:600px; height:400px;"></div>
 
-Consider that you have a full P2P network with for any instant _T_ each node
-are connected to perhaps 25% of the full network. Reducing the global bandwidth
-of the network.
+Consider a P2P network with, for any instant _T_, each node
+are connected to perhaps 25% of the nodes (to reducing the global bandwidth).
 
-Also consider that the network is open and a new node can spawn in the network
-connected to 25% of the network (in general it's a geographic zone). Any nodes
-at the same instant _T_ is able to create a new data to be propagated to the
+Also consider that the network is open. A new node can spawn in the network
+connected and connect itself to 25% of the nodes (ex: in a geographic zone).
+Any nodes at _T_ can create a new *data* to be propagated through
 network.
 
-That kind of network can be any P2P or node
-configuration. We can imagine a multitude of cell-phone talking each others and
-sending a notification. A client based + online video game that use a kind of
-consensus, with a weak leader and weak node connections. Or a blockchain
-network with poor connectivity between nodes.
+Note: That kind of network can be any P2P model or any nodes
+configuration. We can imagine a multitude of cell-phone sending notifications
+to each others with bluetooth connections. Or a client based online video game
+that use a kind of consensus, with a weak leader and weak node connections.
+Or a blockchain network with poor connectivity between nodes.
 
 Now the problem is, how to propagate the information through the network?
 
@@ -68,7 +67,7 @@ of the size of that one. In fact, the straightforward tactic of propagation is
 good enough for small data, but not for a large buffer.
 
 So nodes are receiving hash/ids of the data and increment locally the number of times
-a nodes say _"Hi! I get that data by the way"_.
+a node say _"Hi! I get that data, by the way"_.
 
 ```js
 // On receive a hash key, increment a counter in the `this.known`
