@@ -1,3 +1,13 @@
+---
+layout: default
+title:  "Bootstrap a database in real time 4/4"
+description: "
+Studying some theoretical bootstrap methods in a <i>P2P</i> network.
+My feedback about the two previous solutions (Polling vs Webhook) 4/4"
+
+authors: ["Adrien Zinger"]
+---
+
 ## Templates, Concepts and traits
 
 The common thing between these three words is that they all are
@@ -67,14 +77,14 @@ the famous `ToString` traits constraints.
 
 /// Structure defined in the user program
 struct A {
-	// parameters
+  // parameters
 };
 
 /// Implementation of the trait `ToString` for local structure `A`
 impl ToString for A {
-	fn to_string(&self) -> String {
-		// implementation
-	}
+  fn to_string(&self) -> String {
+    // implementation
+  }
 }
 ```
 
@@ -89,7 +99,7 @@ that:
 
 ```rust
 pub fn foo(obj: impl ToString) {
-	println!("{}", obj.to_string());
+  println!("{}", obj.to_string());
 }
 ```
 
@@ -99,23 +109,14 @@ yourself the trait. Because C++ is not oriented like that and sometime
 have got an idea please comment the post!
 
 ```cpp
+// declare trait in lib.h
 
-// That is declared in our library, it hasn't to be a part of the client
-// code!
-// template<T>
-// struct trait_to_string<T> {
-// 	std::string to_string(const T& self);
-// }
-
-struct A {
-	// parameters
-}
-
-struct trait_to_string<A> {
-	std::string to_string(const A& self) {
-		// implementation
-	}
-}
+template<typename T>
+struct trait_to_string {
+  // By default, we don't implement that trait for T
+  static const bool impl_flag = false;
+  static std::string to_string(const T& self);
+};
 ```
 
 OK, so we are here with a `trait_to_tring` that replace the standard in
@@ -129,5 +130,69 @@ Now, we need to constrain the client to use our library with only data
 that implement our trait `ToString-like`. We will use... _Concepts_!!
 
 
+```cpp
+// still in lib.h
 
+template<typename T>
+concept ImplToString = requires(T a) {
+  // required to be true
+  requires trait_to_string<T>::impl_flag;
+};
+
+/**
+* Export function log that is very simple...
+*/
+template <typename T>
+requires ImplToString<T>
+std::string log(T a)
+{
+  return trait_to_string<T>::to_string(a);
+}
+```
+
+And we expose a basic function `log` that don't even do anything so it's
+a bit miss-named. Whatever, you're not forced to use the concepts here,
+you can do the same thing with a simple `<Template>` and documentation!
+In addition, you shouldn't use _Concepts_ only to do that kind of stuff.
+It will take a full dedicated article about that subject.
+
+Then, once you're done with your library, you can use it that way:
+
+```cpp
+struct A {
+  A(std::string a): str(a) {};
+  std::string str;
+};
+
+template<>
+struct trait_to_string<A> {
+  static const bool impl = false;
+  static std::string to_string(const A& self) {
+    return self.str;
+  }
+};
+
+int main() {
+  A a("hello world");
+  std::cout << log(a);
+}
+```
+
+I'm agree, the flag isn't really beautiful, it allow us to put a Concept
+constraint and we'll probably get a better way to define that. To be
+honest, there is probably already a solution that I don't know. :-D
+
+However, look at the definition of the trait... Isn't it `Rusty`?!
+
+I leave you here for the moment! I'll be back in next articles to be
+more precise about _Concepts_. I promise to look attentively at that
+flag too.
+
+## Conclusion
+Rust compiler do a lot of things for us to make the pattern efficient
+and easy to use. In addition, there is a little thing that we learn the
+last 20 years about hat pattern called the _Orphan rule_, and it's
+probably the reason why I didn't heard much about _traits_ in C++.
+
+I really want to test the limits in C++ of the pattern! I'll be back!
 

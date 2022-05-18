@@ -351,7 +351,11 @@ a:hover {
 .hack em:after,
 .hack em:before {
     content: "*";
-    display: inline
+    display: inline;
+}
+
+.hack em {
+    font-style: italic !important;
 }
 
 .hack pre code:after,
