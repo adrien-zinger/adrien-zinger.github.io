@@ -1,14 +1,22 @@
 ---
 layout: default
-title:  "Bootstrap a database in real time 4/4"
+title:  "Templates, Concepts and traits"
 description: "
-Studying some theoretical bootstrap methods in a <i>P2P</i> network.
-My feedback about the two previous solutions (Polling vs Webhook) 4/4"
+The common thing between these three words is that they all are
+_programming ideas_ and not (perhaps) related to any language feature.
+If you want, it's the kind of ideas that know live in the soul of
+the modern programming."
 
 authors: ["Adrien Zinger"]
+comments_id: 7
 ---
 
 ## Templates, Concepts and traits
+<span style="color: #A0A0A0">[2022-05-18] \#C++ \#Rust \#Traits
+
+---
+
+
 
 The common thing between these three words is that they all are
 _programming ideas_ and not (perhaps) related to any language feature.
@@ -17,7 +25,7 @@ the modern programming.
 
 If `templates` and `concepts` are a similar in the sens that it allow
 the user to do some _meta programming_, `traits` are an idiomatic system
-to (and I quote <u> _Bjarn Stroustrup_ </u>) carry informations used by
+to (and I quote <u> _Bjarn Stroustrup_ </u>) carry information used by
 another object to determine _policy_ or _implementation details_.
 
 ## About templates
@@ -119,7 +127,7 @@ struct trait_to_string {
 };
 ```
 
-OK, so we are here with a `trait_to_tring` that replace the standard in
+OK, so we are here with a `trait_to_string` that replace the standard in
 Rust. And the structure `trait_to_string<A>` that implement the trait.
 
 You've noticed that we already use templates here in _C++_, and not in
