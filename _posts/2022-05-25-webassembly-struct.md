@@ -48,9 +48,13 @@ WebAssembly.instantiateStreaming(fetch('add.wasm'))
 ```
 
 Here, we learn how to pass a simple `i32`. And then? What about a string? A
-user-defined structure? The web seem to silent the fact that there is no
-convention about it. There is some good stuff that can help you if you work with
-*Rust* that build to *wasm* and if you use the wasm in *Rust*. :snake: https://github.com/rustwasm/wasm-bindgen. But it's not very flexible.
+user-defined structure? The web seems to silent the fact that there is no
+convention about it...
+
+There is some good stuff that can help you if you work with
+*Rust* that build to *wasm* and if you use the wasm in *Rust*.🐍
+[wasm-bingen](https://github.com/rustwasm/wasm-bindgen) is a good example of
+a project that tend to unify that world. But it's not very flexible for now.
 
 In conclusion, if you want to some stuff, exotic, with wasm. You have to learn by
 yourself how the data is represented in memory. And if you don't want to drown, I
