@@ -56,6 +56,7 @@ There is some good stuff that can help you if you work with
 [wasm-bingen](https://github.com/rustwasm/wasm-bindgen) is a good example of
 a project that tend to unify that world. But it's not very flexible for now.
 
+
 In conclusion, if you want to some stuff, exotic, with wasm. You have to learn by
 yourself how the data is represented in memory. And if you don't want to drown, I
 strongly recommend to you to learn try a little bit to laught with webassembly directly.
