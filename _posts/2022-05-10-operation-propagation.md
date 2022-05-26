@@ -20,15 +20,18 @@ comments_id: 6
 ---
 
 ## Data propagation with unstructured P2P
+<span style="color: #A0A0A0">[2022-05-18] \#p5Js \#p2p
+
+---
+
 
 <div id="can" style="width:600px; height:400px;"></div>
 
 Consider a P2P network with, for any instant _T_, each node
 are connected to perhaps 25% of the nodes (to reducing the global bandwidth).
 
-Also consider that the network is open. A new node can spawn in the network
-connected and connect itself to 25% of the nodes (ex: in a geographic zone).
-Any nodes at _T_ can create a new *data* to be propagated through
+Also consider that the network is open. A new node can spawn in the network, and connect itself to 25% of the nodes (ex: in a geographic zone).
+Any nodes at *T* can create a new *data* to be propagated through
 network.
 
 Note: That kind of network can be any P2P model or any nodes
@@ -37,7 +40,7 @@ to each others with bluetooth connections. Or a client based online video game
 that use a kind of consensus, with a weak leader and weak node connections.
 Or a blockchain network with poor connectivity between nodes.
 
-Now the problem is, how to propagate the information through the network?
+How to propagate the information through the network?
 
 ### Straightforward
 
@@ -46,7 +49,7 @@ neighbors once. And send the data that we produce to every neighbor once.
 
 ![workflow of a data propagation](/assets/img/graph_id_send_workflow.svg)
 
-The _"algorithm"_ is very basic but works well with no surprise. But looking 
+The _"algorithm"_ is very basic but works well with no surprise. But looking
 at the workflow of an information. We understand that a node will receive
 the information from a kind of random amount of distant nodes. And more
 the network grow up, more he will receive a lot of useless batches of data.
@@ -125,6 +128,6 @@ find the full code of the preview on my blog repository in the following paths:
 │   ├── js
 │   │   ├── constants.js # some constants for the mocked network configuration
 │   │   ├── graphical.js # Drawing tools
-│   │   ├── node.js      # Nodes behaviors 
+│   │   ├── node.js      # Nodes behaviors
 │   │   └── sketch.js    # p5js configuration and main loop
 ```
