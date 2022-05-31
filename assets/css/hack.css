@@ -334,9 +334,13 @@ a:hover {
 
 .hack blockquote {
     position: relative;
-    padding-left: 17px;
-    padding-left: 2ch;
-    overflow: hidden
+    padding-left: 28px;
+    padding-right: 10px;
+    border-radius: 10px;
+    background-color: #aaaaaa22;
+    overflow: hidden;
+    color: #777777;
+    padding-bottom: 7px;
 }
 
 .hack blockquote:after {
@@ -345,7 +349,8 @@ a:hover {
     position: absolute;
     top: 0;
     left: 0;
-    line-height: 20px
+    line-height: 20px;
+    padding: 5px;
 }
 
 .hack em:after,
