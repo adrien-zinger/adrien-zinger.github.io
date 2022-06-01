@@ -15,7 +15,7 @@ comments_id: 8
 
 ## String concatenation in webassembly
 
-<span style="color: #A0A0A0">[2022-05-18] \#JS \#wasm \#interop
+<span style="color: #A0A0A0">[2022-05-31] \#JS \#wasm \#interop
 
 ---
 
