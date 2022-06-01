@@ -22,9 +22,9 @@ comments_id: 8
 Dealing with memory in webassembly can be difficult to understand. But, actually,
 it is not so hard.
 
-The thing to understand is that a wasm modules leave in separated instances
+The thing to understand is that wasm modules leave in separated instances
 inside a *VM*. The *VM* is the executor, manage behind the scene the
-validation of the module, the execution. It manage the stack machines,
+validation of the module, the execution. It manages the stack machines,
 the global variables and the *heap*.
 
 Instances are fully described in the wasm code. In webassembly text, you
@@ -36,9 +36,9 @@ kind of lines:
   (data (i32.const 0) "hi") ;; add a kind of constant in that memory at 0
 ```
 
-The memory management is described inside the binary.
+The binary describes the memory management.
 So there is nothing like *garbage collection*. Furthermore, because in
-a navigator, the envirronment manage mainly the memory of your
+a navigator, the environment manage mainly the memory of your
 JS code. So you cannot safely let the memories being shared
 like as in a classical dynamically linked library between compiled codes.
 
@@ -62,7 +62,7 @@ like as in a classical dynamically linked library between compiled codes.
 
 ## Writing a string
 
-The calls of a wasm function from the embedder can only transfer primitiv
+The calls of a wasm function from the embedder can only transfer primitive
 value as `i32` or `i64`, if we want to share a string, we need to write inside
 the instance memories.
 
@@ -90,10 +90,10 @@ of `hello\0` string in the exported memory :)
     }
 ```
 
-Be carefull! there is nothing that prevent you to write over a value already in
+Be careful! There is nothing that prevent you to write over a value already in
 the shared memory. You could try to *grow* the memory of one page, so you're sure
 the memory chunk where you're about to write is free to use. You can also let
-the module tel you where you can write if there is an allocator inside.
+the module tell you where you can write if there is an allocator inside.
 
 Like that too simple but enough allocator, for example:
 
@@ -191,4 +191,4 @@ enough of memory 😉
 > You can also invent your own encoding process! But I recommend to use some
 > known standard 😂
 
-The full code is disponible on my bucket [here](https://github.com/adrien-zinger/code_bucket/tree/main/wasm_strings)!
+The full code is on my bucket [here](https://github.com/adrien-zinger/code_bucket/tree/main/wasm_strings)!
