@@ -15,35 +15,43 @@ comments_id: 8
 
 ## String concatenation in webassembly
 
-<span style="color: #A0A0A0">[2022-05-18] \#C++ \#Rust \#Traits
+<span style="color: #A0A0A0">[2022-05-18] \#JS \#wasm \#interop
 
 ---
 
-Deal with memory in webassembly can be difficult to understand. But, actually,
-it is nothing very complex.
+Dealing with memory in webassembly can be difficult to understand. But, actually,
+it is not so hard.
 
-The thing to understand is that wasm modules leave in instances inside a *VM*.
-The *VM* is the executor, manage behind the scene the validation of the module, the
-execution. It manage the stack machines, the global variables and the *heap*.
+The thing to understand is that a wasm modules leave in separated instances
+inside a *VM*. The *VM* is the executor, manage behind the scene the
+validation of the module, the execution. It manage the stack machines,
+the global variables and the *heap*.
 
-That instance is fully described in the wasm. In the webassembly text, you
-can know how is the initialized the instance when you see
-that kind of lines:
+Instances are fully described in the wasm code. In webassembly text, you
+can know how is initialized the instance's memory when you see that
+kind of lines:
 
 ```wat
   (memory (export "memory") 1) ;; describe the memory
   (data (i32.const 0) "hi") ;; add a kind of constant in that memory at 0
 ```
 
-In WebAssembly, the memory management is described inside the binary.
-So there is nothing like
-*garbage collection*. Because in a navigator, the envirronment manage mainly the memory of your
-JS code. So you cannot
-safely let the memories being shared like with a classical dynamic linked library.
+The memory management is described inside the binary.
+So there is nothing like *garbage collection*. Furthermore, because in
+a navigator, the envirronment manage mainly the memory of your
+JS code. So you cannot safely let the memories being shared
+like as in a classical dynamically linked library between compiled codes.
 
 > It's actually possible to share the memory between multiple modules. Exactly
 > like the linking of a *Rust* and a *C* library. With the difference in a classical dynamic
 > link you don't have to specify it explicitelly.
+>
+> Emscripten can produce wasm that are dynamically linked together. You can
+> So compile C into a webassembly binary and deal with a shared memory between
+> two wasm.
+>
+> In the future, it would be neat to be able to share the
+> memory with C/C++/Rust code from a VM like _wasmtime_ or _wasmer_.
 >
 > Another thing.
 > There is no garbage collection directly in the webassembly,
