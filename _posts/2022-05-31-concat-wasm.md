@@ -31,10 +31,13 @@ Instances are fully described in the wasm code. In webassembly text, you
 can know how is initialized the instance's memory when you see that
 kind of lines:
 
-```wat
-  (memory (export "memory") 1) ;; describe the memory
-  (data (i32.const 0) "hi") ;; add a kind of constant in that memory at 0
+```js
+  (memory (export "memory") 1)
+  (data (i32.const 0) "hi")
 ```
+
+Here, I declare a memory of one page and a data "`hi`" in ascii at
+position 0.
 
 The binary describes the memory management.
 So there is nothing like *garbage collection*. Furthermore, because in
@@ -71,7 +74,7 @@ memory. We need to import or export it.
 
 Ex: export a memory of one page.
 
-```wat
+```js
   (memory (export "memory") 1)
 ```
 
@@ -97,7 +100,7 @@ the module tell you where you can write if there is an allocator inside.
 
 Like that too simple but enough allocator, for example:
 
-```wat
+```js
  (func $wrong_malloc (param $0 i32) (result i32)
         (local $ret i32)
         global.get $heap_head
@@ -120,9 +123,11 @@ anything I write in my variable. If I write the string at the position
 That will read and find the end of the string,
 and then continue to write ` world`.
 
-```wasm
-  ;; store in the s param the next index after the last char
-  ;; initialy, s == 20 (given input arg)
+
+Example: Store in the s param the next index after the last char
+initialy, `s == 20` (given input arg).
+
+```js
   (loop $to_the_end
     local.get $s
     i32.load8_u
@@ -146,11 +151,11 @@ and then continue to write ` world`.
 ```
 
 We already defined a string in the memory at the position `0`
-containing the sequence ` world` with this `(data (i32.const 0) " world")`.
+containing the sequence `\ world` with this `(data (i32.const 0) " world")`.
 So we can load it and copy each values of the string to
 the last character.
 
-```wat
+```js
   (loop $dump
     local.get $s
     local.get $pos
