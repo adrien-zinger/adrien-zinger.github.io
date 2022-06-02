@@ -4,3 +4,9 @@ exclude:
   - Gemfile
   - Gemfile.lock
 exclude: [vendor]
+plugins:
+  - jekyll-feed
+title: maybe uninit
+description: Adrien Zinger - Blog
+author: Adrien Zinger
+
