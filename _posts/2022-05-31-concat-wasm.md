@@ -6,7 +6,7 @@ Develop a concatenation of strings in webassembly is the best
 entry point to understand the linear memory in a wasm instance.
 
 All is about how do you represent a structure with a sequence
-of bytes. Nothing complex.
+of bytes. It is not so hard.
 "
 
 authors: ["Adrien Zinger"]
