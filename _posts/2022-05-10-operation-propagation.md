@@ -90,7 +90,7 @@ insertOpKey(key) {
 So, the last `sort` is very useful for the second and last part of the algorithm!
 It gave me that strategical order.
 
-The table `this.known` look's like that:
+The table `this.known` looks like that:
 <div style="font-size:30px; line-height:auto;">
 <span style="font-size:20px;">youngest data (or fake)</span> <<<<<<
 <br/>
