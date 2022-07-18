@@ -1,0 +1,39 @@
+.list-group-item.active {
+    border-radius: 0 !important;
+    border: none !important;
+    background-color: transparent !important;
+    color: white !important;
+}
+
+.list-group-item {
+    border-radius: 0 !important;
+    background-color: transparent !important;
+}
+
+ul.list-group > li:nth-child(2) {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+
+ul.list-group > li:nth-child(3) {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
+ul.list-group > li:nth-child(4) {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.hidden {
+    color: transparent;
+}
+
+.form-control {
+    padding: 10px !important;
+    border-radius: 0 !important;
+}
+
+.btn-primary {
+    background-color: lightgray !important;
+    border: none !important;
+    color: black !important;
+}

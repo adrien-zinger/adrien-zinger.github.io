@@ -1,0 +1,15 @@
+{
+  "name": "sisters-wedding",
+  "collaborators": [
+    "Adrien Zinger <zinger.ad@gmail.com>"
+  ],
+  "version": "0.1.0",
+  "files": [
+    "sisters_wedding_bg.wasm",
+    "sisters_wedding.js",
+    "sisters_wedding.d.ts"
+  ],
+  "module": "sisters_wedding.js",
+  "types": "sisters_wedding.d.ts",
+  "sideEffects": false
+}
