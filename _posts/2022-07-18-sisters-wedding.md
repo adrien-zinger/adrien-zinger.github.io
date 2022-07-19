@@ -170,7 +170,7 @@ the names of the participants.
 type Dna = Vec<Vec<String>>;
 ```
 
-To judge an ADN, we need to create some penalties and some
+To judge a DNA, we need to create some penalties and some
 bonuses. Penalties are applied when two participants that
 are not “compatible” are in the same table. I give bonuses
 in the same way.
