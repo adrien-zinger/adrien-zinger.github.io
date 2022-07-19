@@ -18,7 +18,7 @@ comments_id: 10
 
 
 # Sister's wedding
-<span style="color: #A0A0A0">[2022-07-15] \#Rust \#GeneticAlgorithm \#WASM
+<span style="color: #A0A0A0">[2022-07-18] \#Rust \#GeneticAlgorithm \#WASM
 
 > Article is being checked ;) but readable!
 
@@ -132,12 +132,14 @@ Full result at the end of the article ;)
 ## My sister is getting married!
 
 We're talking about serious things!!
+  
+Talking with my sister, we spoke about some people at the wedding that
+cannot be together at the table. Then, we felt about the problem, how to
+correctly place people? For example, I want to be with my girlfriend and
+my daughter, but Barney wants to be with his crush, who doesn’t want
+to speak with that ex-best friend! Multiply that kind of story by 100,
+and you finish with a wedding burnout.
 
-Talking with my sister, we talked about some person in the wedding that cannot
-be together at table. Then, we felt in the problem, how to correctly place people?
-For example, I want to be with my girlfriend and my daughter, then Barney want to be
-with his crush who doesn't want to speak with that ex-best friend! Multiply that
-kind of story by an 100 and you finish with a wedding's' burn out.
 
 <img style="max-width: 500px;" src="{{site.baseurl | prepend: site.url}}/assets/img/bureaucracy.gif" alt="crack" />
 
@@ -147,35 +149,34 @@ with a code snippet.
 
 ## Code
 
-A genetic algorithm, is just a smart method to bruteforce a problematic like
-the famous "Traveling salesman". You'll never be sure that the result is the
-best. Nevertheless, you'll have a better result than an approximation, and in
-a reasonable time.
+A genetic algorithm is just a smart method to bruteforce a problem like the
+famous “Traveling salesman”. You’ll never be sure that the result is the
+best. Nevertheless, you’ll have a better result than an approximation, and
+in a reasonable time.
 
 I'm not going to explain step by step the principle of the genetic method. If
 you're interested, you can look at these videos of [The coding train channel](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwjnoJme_oH5AhUzh_0HHTNmAwkQwqsBegQIEhAB&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D9zfeTw-uFCw&usg=AOvVaw2r19VpTmdolkAXJpaZDJv7).
 
 I propose to show, how with perhaps 200 lines of rust I can write a web library
-with a genetic algorithm, specific for the table plans.
+with a genetic algorithm, specific for a table's plan.
 
 ### Types
 
 When I start a genetic algorithm, I like to start with the definition of
-the DNA. An option for our case is to use a vector of table and store the
-names of the participants.
+DNA. An option for our case is to use a vector of tables and store
+the names of the participants.
 
 ```rust
 type Dna = Vec<Vec<String>>;
 ```
 
-To judge an ADN, we need to create some penalties and some bonus.
-Penalties are applied when two participants that are not "compatible" are
-in the same table. Bonus are given in the same way.
-
-We want to give a value to the bonus and the penalty.
+To judge an ADN, we need to create some penalties and some
+bonuses. Penalties are applied when two participants that
+are not “compatible” are in the same table. I give bonuses
+in the same way.
 
 Penalty key: two names separated with a coma in alphabetical order.
-Penalty value: value of the penalty.
+Penalty value: value of the penalty. (0 to 255)
 
 
 ```rust
@@ -185,7 +186,7 @@ pub type Bonus = HashMap<String, u8>;
 
 Number of people in the population. I Don't need many, 100 is more
 than enough. If we want a better result we prefer to increase the number of
-occurrences.
+generations.
 
 ```rust
 static N: usize = 100;
@@ -195,13 +196,13 @@ static N: usize = 100;
 ### Evaluation
 
 There is no genetic algorithm without evaluations! The function will
-compute a value from an adn, then we will order the bests rated candidates
-and choose which will be merged.
+compute a value from a DNA, then we will order the bests rated candidates
+and merge them together.
 
-The evaluation can be very naive, if there is two people with a bonus on
-the same table, we add the bonus, if there is two people with a penalty,
-we subtract the penalty (all of that in the range of an unsigned 32 bits
-integer)
+The evaluation can be very naive! If two people with a bonus are at
+the same table, we add the bonus's value. If two people with a penalty
+are at the same table, we subtract the penalty's value (all of that
+in the range of an unsigned 32 bits integer)
 
 ```rust
 pub fn evaluation(dna: &Dna, penalties: &Penalties, bonus: &Bonus) -> u32 {
