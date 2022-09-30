@@ -36,7 +36,7 @@ comments_id: 11
 
 Si vous désirez sauter cette introduction où je raconte ma vie, ce que je comprends très bien,
 rendez-vous directement à la section
-[Les algrithmes de compression - debut du technique](#les-algrithmes-de-compression---debut-du-technique) !
+[Les algrithmes de compression - début du technique](#les-algrithmes-de-compression---début-du-technique) !
 
 Je me souviens avoir passé un entretiens, un jour, ou j'ai dit que j'aimais bien
 l'algorithmie. Tout s'est bien passé, mais à la fin de l'entretien on me dit:
@@ -71,8 +71,10 @@ Mais le plus important est de s'amuser et de construire quelque chose.
 d'ailleurs. Sans vous en dire plus, je suis instantanément allé regarder ce qui
 se faisait en matière de compression de données.
 
-J'ai découvert un univers, là où moi j'en étais resté au `LZW`. Ce qui est genial,
-c'est qu'il n'y a PAS de bonne solution. Chacun a son rôle à jouer. Et si certaines méthodes ont des performances nettement plus sympas, ça ne signifie pas qu'elles sont les plus adaptées pour toute problématique.
+J'ai découvert un univers, là où moi j'en étais resté au `LZW`. Ce qui est
+genial, c'est qu'il n'y a PAS de bonne solution. Chacun a son rôle à jouer. Et
+si certaines méthodes ont des performances nettement plus sympas, ça ne signifie
+pas qu'elles sont les plus adaptées pour toute problématique.
 
 Ce n'est pas tout ! Les perforances dépendent aussi des capacités hardwares !
 L'amélioration de nos CPUs nous permet d'exécuter des multiplications de
@@ -165,7 +167,7 @@ algo, vers la connaissance de la compression.
 
 <br>
 
-## Les algrithmes de compression - debut du technique
+## Les algrithmes de compression - début du technique
 
 Il y a deux grandes familles d'algorithmes de compression. On les connaît bien,
 ce sont les "sans perte" et "avec perte". Ici, on s'interesse aux "sans perte",
@@ -174,7 +176,7 @@ pour vous citer quelques noms: LZ4, LZW, FSE, ZIP, etc.
 Une bonne partie des algos utilisent des tables de compression, et d'autres non.
 Pour moi, les deux grandes familles sont: __TABLE__ ou __ARITHMETIQUE__.
 
-## Chapitre 1, les tables de compressions - ouverture d'une parenthese
+## Chapitre 1, les tables de compressions - ouverture d'une parenthèse
 
 Utiliser une "table de compression" signifie que pour un symbole, on associe une
 valeur.
@@ -215,7 +217,7 @@ pour des petits alphabets. En plus les algorithmes sont sur Wikipédia. Comme je
 vous le disais, trouver des informations sur ces différentes méthodes: c'est
 facile !
 
-## Chapitre 2, les compressions arithmétiques, je donne un éxemple
+## Chapitre 2, les compressions arithmétiques, je donne un exemple
 
 <div class="tex2jax_ignore">
 Avec la compression (code) arithmétique, on utilise des maths. Sans surprise ?
@@ -247,10 +249,10 @@ Voila a quoi ca ressemble:
 
 Maintenant, cherchons à encoder le premier symbole de la séquence "ABADABAC".
 Pour notre algorithme de compression, on doit remettre à l'échelle les valeurs
-de a et de b.
+de `a` et de `b`.
 
-a devient la valeur basse de $P(A)$, et b la valeur haute de $P(A)$. Puis, entre
-a et b, on redispose les repères. Avant, on était à une echelle 1 $(b - a = 1)$,
+`a` devient la valeur basse de $P(A)$, et `b` la valeur haute de $P(A)$. Puis, entre
+`a` et `b`, on redispose les repères. Avant, on était à une echelle 1 $(b - a = 1)$,
 maintenant on est à une échelle de 0,5. Alors notre segment ressemble à ça:
 
 ![My Image](/assets/img/aritm3.png)
@@ -260,13 +262,13 @@ besoin de deux choses:
 
 1. Une [fonction
    cumulative](https://en.wikipedia.org/wiki/Cumulative_distribution_function),
-    permet de savoir où le sous-segment d'un symbol commence.
+    permet de savoir où le sous-segment d'un symbole commence.
 
     On veut diviser le segment. Avec $P(A, B, C, D) = (0.5, 0.25, 0.125, 0.125)$.
     Calculer la CDF nous donne $c(A, B, C, D) = (0, 0.5, 0.75, 0.875)$, les
     _valeurs basses des sous-segments_.
 
-2. Un cumul de la distribution et de la fonction cumulative pour savoir où le
+2. Un cumul de la distribution ou la fréquence et de la fonction cumulative pour savoir où le
    symbole finit.
 
     $d(A, B, C, D) = (c(A) + P(A), ..., c(D) + P(D)) = (0.5, 0.75, 0.875, 1)$ ce qui
@@ -285,7 +287,7 @@ pour chaque c dans "ABADABAC"
     a = a + w * c[c]
 ```
 
-Je bricole un petit bout de code a partir de ca et je trouve l'interval
+Je bricole un petit bout de code à partir de ça et je trouve l'intervalle
 $[a, b)$ sans me casser la tête: $[0.3070068359375, 0.30706787109375)$.
 Et voilà, cet intervalle c'est notre état final. À lui seul il représente
 toute notre séquence encodé.
@@ -496,7 +498,7 @@ pub fn simple_normalization(
 ```
 
 J'utilise pour la première fois le concept de `table_log`. Cette variable, à
-part le fait qu'on dise qu'on doit s'aligner sur $2^table log$, à un réel impact
+part le fait qu'on dise qu'on doit s'aligner sur $2^{tableLog}$, à un réel impact
 sur la compression. Elle joue le rôle de *potentiomètre* concernant la vitesse
 d'exécution __et__ la qualité de compression. Une `table_log` élevée tendra à
 réduire la précision de la normalisation. Jusqu'à finir par me donner une sortie
@@ -510,10 +512,10 @@ réaliser, il faut trouver le juste milieu.
 1) Je calcule la fonction cumulative de mon histogramme. Mon histogramme, c'est
    simplement une liste de fréquences. J'applique la _CDF_, tel que $cdf_i =
    cdf_{i - 1} + freq_i$ et $cdf_0 = 0$. En suivant mon exemple, je trouve $max
-   = 90$. J'aimerais transposer chaque valeur depuis l'échelle $[0; 90]$, sur
-   l'intervalle $[0;2^3]$.
+   = 90$. J'aimerais transposer chaque valeur depuis l'échelle $[0, 90]$, sur
+   l'intervalle $[0, 2^3]$.
 
-2) J'applique un [mapping](https://en.wikipedia.org/wiki/Linear_map). Vu que l'histogramme est la dérivée de ma fonction cumulative, je peux retrouver la valeur de mon histogramme à la position $i - 1$ en soustrayant `previous` de `c`. Avec ce code je devrais pouvoir retrouver $freq_norm(A, B, C, D) = (4, 2, 1, 1)$ avec une `table_log` de 3.
+2) J'applique un [mapping](https://en.wikipedia.org/wiki/Linear_map). Vu que l'histogramme est la dérivée de ma fonction cumulative, je peux retrouver la valeur de mon histogramme à la position $i - 1$ en soustrayant `previous` de `c`. Avec ce code je devrais pouvoir retrouver $freq_{norm}(A, B, C, D) = (4, 2, 1, 1)$ avec une `table_log` de 3.
 
 > Le fait de devoir s'aligner sur une puissance de 2 selon moi devrait être optionel.
 > Ça nous permet de d'accelerer l'algorithme, oui, car les multiplication peuvent
