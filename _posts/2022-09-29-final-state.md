@@ -181,24 +181,24 @@ Pour moi, les deux grandes familles sont: __TABLE__ ou __ARITHMETIQUE__.
 Utiliser une "table de compression" signifie que pour un symbole, on associe une
 valeur.
 
-Il y a plusieurs facon de construire ce genre de table.
+Il y a plusieurs façons de construire ce genre de table.
 
 En résumé, un symbole de taille 16, qui sort le plus souvent, sera remplacé par
 un autre symbole de taille 1. Le reste sera substitué par des symboles plus
 gros. L'objectif est que, même avec une répartition équitable des symboles, on
 gagne déjà de la place. Ça dépendra de la taille de l'alphabet aussi bien sûr.
 
-Pour le reste, on associe des symboles qui, seront des lettres, à des séquences
-de 0 et de 1 qui seront des bits. On dit aussi qu'une lettre tient techniquement
+En résumé, on associe des symboles qui, seront des lettres, à des séquences
+de 0 et de 1 qui seront des bits. Généralement, une lettre tient
 sur 8 bits avant la compression.
 
 Si dans notre table on décide que A sera remplacé par '0001', et B par '1'. Si B
 est moins fréquent que A, on n'aura pas une superbe compression. La répartition
 des symboles est très importante pour une bonne performance.
 
-L'utilisation la même méthode de compression, avec des alphabets constitués de
-différents symboles, aura un résultat différent tandis que la source restera la
-même. Par exemple pour "ABAAACABAA", une construction d'alphabet pourrait être
+L'utilisation de la même méthode de compression, avec des alphabets constitués de
+différents symboles, aura un résultat différent tandis que la source restera identique.
+Par exemple pour "ABAAACABAA", une construction d'alphabet pourrait être
 "A", "B", "C". Ou alors "AB", "AA", "AC". Le choix impactera les performances.
 
 Zip, par exemple utilise une methode de type Encodage de Huffman, avec une table
@@ -371,13 +371,13 @@ Bon, il se trouve qu'avec notre répartition étrange on se retrouve toujours av
 $a = 0.5$ et $b = 0.75$ a la fin de notre première etape, et donc on produit '10' en
 fin d'algo.
 
-Et j'obtiens la sequence $01001110100110_b=0.3070068359375$ appartenant
+Et j'obtiens la séquence $01001110100110_b=0.3070068359375$ appartenant
 à l'intervalle qu'on avait trouvé.
 
 ## Décoder un encodage arithmétique
 
-Pour decoder, on reprend le premier pseudocode et on y ajoute un test pour
-savoir quel symbol émettre.
+Pour décoder, on reprend le premier pseudocode et on rajoute un test pour
+savoir quel symbole émettre.
 
 ```rust
 let mut a = 0f64;
@@ -498,16 +498,17 @@ pub fn simple_normalization(
 ```
 
 J'utilise pour la première fois le concept de `table_log`. Cette variable, à
-part le fait qu'on dise qu'on doit s'aligner sur $2^{tableLog}$, à un réel impact
-sur la compression. Elle joue le rôle de *potentiomètre* concernant la vitesse
-d'exécution __et__ la qualité de compression. Une `table_log` élevée tendra à
-réduire la précision de la normalisation. Jusqu'à finir par me donner une sortie
-plus grande que l'entrée. Baisser cette valeur peut avoir aussi un bon impact
-sur la vitesse d'exécution. Ça permet d'arriver moins vite à des états élevés
-qui prennent plus de temps de CPU pour être traité. Il y a une autre raison pour
-laquelle on accélère la compression, j'en parle après. En revanche, utiliser une
-valeur basse peut nuire à notre normalisation en la rendant impossible à
-réaliser, il faut trouver le juste milieu.
+part le fait qu'on dise qu'on doit s'aligner sur $2^{tableLog}$, à un réel
+impact sur la compression. Elle joue le rôle de *potentiomètre* concernant la
+vitesse d'exécution __et__ la qualité de compression. Une `table_log` élevée
+tendra à augmenter la précision de la normalisation. Il y aura moins de `1` dans
+l'histogramme. Cependant, augmenter cette variable va aussi nuire à
+l'algorithme. Jusqu'à finir par donner une sortie plus grande que l'entrée.
+Baisser cette valeur a aussi un bon impact sur la vitesse d'exécution. Ça permet
+d'arriver moins vite à des états élevés qui prennent plus de temps de CPU pour
+être traité. et d'éviter des calculs superflus, j'en parle après. En revanche,
+utiliser une valeur trop basse peut nuire à notre normalisation en la rendant
+impossible à réaliser, il faut trouver le juste milieu.
 
 1) Je calcule la fonction cumulative de mon histogramme. Mon histogramme, c'est
    simplement une liste de fréquences. J'applique la _CDF_, tel que $cdf_i =
