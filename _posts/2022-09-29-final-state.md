@@ -36,10 +36,10 @@ comments_id: 11
 
 Si vous désirez sauter cette introduction où je raconte ma vie, ce que je comprends très bien,
 rendez-vous directement à la section
-[Les algrithmes de compression - début du technique](#les-algrithmes-de-compression---début-du-technique) !
+[Les algorithmes de compression - début du technique](#les-algorithmes-de-compression---début-du-technique) !
 
-Je me souviens avoir passé un entretiens, un jour, ou j'ai dit que j'aimais bien
-l'algorithmie. Tout s'est bien passé, mais à la fin de l'entretien on me dit:
+Je me souviens avoir passé un entretien, un jour, ou j'ai dit que j'aimais bien
+l'algorithmie. Tout s'est bien passé, mais à la fin de l'entrevue on m'a répondu:
 > "C'est bizarre, tu dis que tu aimes l'algo, mais tu fais ça de cette manière ?
 > Tout le monde sait que ça peut être résolu en O de N sur deux !"
 
@@ -54,7 +54,7 @@ les classiques: des tris, des plus courts chemins, un allocateur, un alpha-beta
 pruning... et j'en passe.
 
 Mais même en connaissant mes classiques, je pourrais mettre un peu plus de cinq
-minutes pour ressortir un A* parfait, sans ressource. Je ne m'exerce pas tout
+minutes pour ressortir un A* parfait, sans ressource. Je ne m'exerce pas tous
 les jours, et le monde de l'informatique est trop grand pour tout connaître, non
 ? Avec du recul, je sais aujourd'hui que cette partie en entretien n'a pas été
 décisive. J'étais suffisamment junior pour que ça se voit, même en baratinant.
@@ -74,7 +74,7 @@ se faisait en matière de compression de données.
 J'ai découvert un univers, là où moi j'en étais resté au `LZW`. Ce qui est
 genial, c'est qu'il n'y a PAS de bonne solution. Chacun a son rôle à jouer. Et
 si certaines méthodes ont des performances nettement plus sympas, ça ne signifie
-pas qu'elles sont les plus adaptées pour toute problématique.
+pas qu'elles sont les plus adaptées pour toutes problématiques.
 
 Ce n'est pas tout ! Les perforances dépendent aussi des capacités hardwares !
 L'amélioration de nos CPUs nous permet d'exécuter des multiplications de
@@ -123,17 +123,17 @@ Les mois passaient...
 
 ## Étudier la théorie
 
-Après avoir lutté pour comprendre de quoi FSE en retourne, j'ai pu mettre a
+Après avoir lutté pour comprendre de quoi FSE en retourne, j'ai pu mettre à
 profis tout ce que j'avais apris pour commencer sur des fondations solides.
 
 <div class="tex2jax_ignore">
 Yann Collet, le dev principal de FSE, a un blog. Et c'est un excellent point de
-départ theorique. Même si j'ai malheureusement eu quelques problèmes avec, des
+départ théorique. Même si j'ai malheureusement eu quelques problèmes avec, des
 problèmes que je ne vous causerai pas ici (j'espère).
 </div>
 
 Pour faire simple, il y a trop d'explication... Vous savez, lorsque vous essayez
-de faire comprendre quelque chose à quelqu'un, et que surrexpliquer vous fais
+de faire comprendre quelque chose à quelqu'un, et que surrexpliquer vous fait
 sauter des étapes ? Même en étant un maitre dans son domaine, transmettre ses
 connaissances n'est pas si facile.
 
@@ -153,13 +153,13 @@ je vous indiquais un chemin en vous disant comment revenir. Je ne comprends pas
 en quoi c'est plus simple personnellement.
 
 Enfin, j'ai été heureux d'apprendre que cet algorithme dont je vous parle depuis
-le début est issue d'une théorie qui se nome "ANS". Qui veux joliement dire
+le début est issue d'une théorie qui se nomme "ANS". Qui veut joliment dire
 Asymetrique Numerical System.
 
-ANS, c'est la premier virage qu'il faut prendre pour sortir du tunel sombre de
+ANS, c'est le premier virage qu'il faut prendre pour sortir du tunnel sombre de
 l'incompréhension. Un virage qui, parce que c'est un peu rébarbatif surement,
-est officiellement indiqué comme "une chose à laquelle on peut s'interesser plus
-tard... si on le souhaite... peut être". J'ai sauté cette étape, obéissant que
+est officiellement indiqué comme "une chose à laquelle on peut s'intéresser plus
+tard... si on le souhaite... peut-être". J'ai sauté cette étape, obéissant que
 je suis, pour finalement comprendre un peu de travers.
 
 Je ne vous ferai pas ça ! En fait, je vais même essayer de vous guider, algo par
@@ -167,7 +167,7 @@ algo, vers la connaissance de la compression.
 
 <br>
 
-## Les algrithmes de compression - début du technique
+## Les algorithmes de compression - début du technique
 
 Il y a deux grandes familles d'algorithmes de compression. On les connaît bien,
 ce sont les "sans perte" et "avec perte". Ici, on s'interesse aux "sans perte",
@@ -201,11 +201,11 @@ différents symboles, aura un résultat différent tandis que la source restera 
 Par exemple pour "ABAAACABAA", une construction d'alphabet pourrait être
 "A", "B", "C". Ou alors "AB", "AA", "AC". Le choix impactera les performances.
 
-Zip, par exemple utilise une methode de type Encodage de Huffman, avec une table
-de compression. Compresser 2 fichiers zip, peut a nouveau avoir une plus petite
-taille. Car les alphabets peuvent etre differents. On peut aussi obtenir des
-résultats différents en compressant le contenu de 2 fichiers zip simultanement,
-ou en compressant les zips eux meme.
+Zip, par exemple utilise une méthode du type Encodage de Huffman, avec une table
+de compression. Compresser 2 fichiers zip, peut à nouveau avoir une plus petite
+taille. Car les alphabets peuvent être différents. On peut aussi obtenir des
+résultats différents en compressant le contenu de 2 fichiers zip simultanément,
+ou en compressant les zips eux-même.
 
 Ces tables sont très pratiques pour la décompression. Pas d'opérations
 gourmandes en CPU, on remplace des bits par un symbole. Recherche rapide,
@@ -367,7 +367,7 @@ de 0 ou de 1 correspond quasiment au nombre d'iterations dans la phase 2.
 En résumé, la phase 3 construit les chaines, 0111... ou 1000... en fonction de
 si on tendait vers $a == 0$, ou $b == 1$.
 
-Bon, il se trouve qu'avec notre répartition étrange on se retrouve toujours avec
+Bon, il se trouve qu'avec notre répartition étrange on finit toujours avec
 $a = 0.5$ et $b = 0.75$ a la fin de notre première etape, et donc on produit '10' en
 fin d'algo.
 

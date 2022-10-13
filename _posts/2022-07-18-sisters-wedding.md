@@ -20,7 +20,7 @@ comments_id: 10
 # Sister's wedding
 <span style="color: #A0A0A0">[2022-07-18] \#Rust \#GeneticAlgorithm \#WASM
 
-> Article is being checked ;) but readable!
+> Article is being checked ;) the demo works only on firefox for now.
 
 ---
 
@@ -133,11 +133,11 @@ Full result at the end of the article ;)
 
 We're talking about serious things!!
   
-Talking with my sister, we spoke about some people at the wedding that
-cannot be together at the table. Then, we felt about the problem, how to
-correctly place people? For example, I want to be with my girlfriend and
+Speaking with my sister, we talked about some people at the wedding who
+can't be together at the table. Then, we felt about the issue, how to
+propperly position people? For example, I want to be with my girlfriend and
 my daughter, but Barney wants to be with his crush, who doesn’t want
-to speak with that ex-best friend! Multiply that kind of story by 100,
+to speak with her ex-best friend! Multiply that kind of story by 100,
 and you finish with a wedding burnout.
 
 
@@ -149,7 +149,7 @@ with a code snippet.
 
 ## Code
 
-A genetic algorithm is just a smart method to bruteforce a problem like the
+A genetic algorithm is just a smart method to bruteforce a problem such as the
 famous “Traveling salesman”. You’ll never be sure that the result is the
 best. Nevertheless, you’ll have a better result than an approximation, and
 in a reasonable time.
@@ -170,10 +170,10 @@ the names of the participants.
 type Dna = Vec<Vec<String>>;
 ```
 
-To judge a DNA, we need to create some penalties and some
-bonuses. Penalties are applied when two participants that
+A way to judge a DNA, is to create penalties and
+bonuses. Penalties are applied when two participants who
 are not “compatible” are in the same table. I give bonuses
-in the same way.
+similarly, when good friends are together.
 
 Penalty key: two names separated with a coma in alphabetical order.
 Penalty value: value of the penalty. (0 to 255)
@@ -184,8 +184,8 @@ pub type Penalties = HashMap<String, u8>;
 pub type Bonus = HashMap<String, u8>;
 ```
 
-Number of people in the population. I Don't need many, 100 is more
-than enough. If we want a better result we prefer to increase the number of
+Number of people in the population. I Don't need much, 100 is more
+than enough. If we want a better result, we prefer to increase the number of
 generations.
 
 ```rust
@@ -293,6 +293,12 @@ pub fn merge(a: &Dna, b: &Dna) -> Dna {
 }
 ```
 
+> That method is similar to merge two hashmaps and taking randomly the value.
+> It's very long to get goods mutations that way. Sadly, a full shuffle of
+> the DNAs is a better solution right now. The main difference between
+> "bruteforce" and "genetic" is the effort we make to choose and merge the best
+> results, a form of eugenics. Sometimes the data structures help us, not
+> today.
 
 ### Start and run the simulation!
 
@@ -309,9 +315,9 @@ pub fn random(mut people: Vec<String>, table_length: usize) -> Dna {
 }
 ```
 
-Now, we have everything, I can run the genetic algorithm. I take in input a
+Now, we got everything, I can start the genetic algorithm. I take in input a
 population, some penalties, some bonus, the number of participants in a
-table. And a log function to report the progression in a callback.
+table. And a log function for reporting progress in a callback.
 
 The `times` input significate the number of generations of the genetic
 evolution.
