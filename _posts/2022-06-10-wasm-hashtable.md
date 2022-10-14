@@ -21,7 +21,7 @@ at some point do interoperability.
 
 ## First, some words about webassembly
 
-Webassembly begins to be famous in the planet *informatic*. Nevertheless,
+Webassembly starts to get famous in the planet *informatic*. Nevertheless,
 all use-cases where you consider to build a wasm require some kind of embedder.
 In other words, you need to define an environment to execute your code using
 another language. E.g. *nodejs*, *Rust* or at least a browser that support wasm!

@@ -498,7 +498,7 @@ pub fn simple_normalization(
 ```
 
 J'utilise pour la première fois le concept de `table_log`. Cette variable, à
-part le fait qu'on dise qu'on doit s'aligner sur $2^{tableLog}$, à un réel
+part le fait qu'on dise qu'on doit s'aligner sur $2^{tableLog}$, a un réel
 impact sur la compression. Elle joue le rôle de *potentiomètre* concernant la
 vitesse d'exécution __et__ la qualité de compression. Une `table_log` élevée
 tendra à augmenter la précision de la normalisation. Il y aura moins de `1` dans
@@ -506,9 +506,9 @@ l'histogramme. Cependant, augmenter cette variable va aussi nuire à
 l'algorithme. Jusqu'à finir par donner une sortie plus grande que l'entrée.
 Baisser cette valeur a aussi un bon impact sur la vitesse d'exécution. Ça permet
 d'arriver moins vite à des états élevés qui prennent plus de temps de CPU pour
-être traité. et d'éviter des calculs superflus, j'en parle après. En revanche,
+être traités, et d'éviter des calculs superflus, on verra ça plus tard. En revanche,
 utiliser une valeur trop basse peut nuire à notre normalisation en la rendant
-impossible à réaliser, il faut trouver le juste milieu.
+impossible à réaliser, il faut trouver le juste équilibre.
 
 1) Je calcule la fonction cumulative de mon histogramme. Mon histogramme, c'est
    simplement une liste de fréquences. J'applique la _CDF_, tel que $cdf_i =
@@ -518,13 +518,13 @@ impossible à réaliser, il faut trouver le juste milieu.
 
 2) J'applique un [mapping](https://en.wikipedia.org/wiki/Linear_map). Vu que l'histogramme est la dérivée de ma fonction cumulative, je peux retrouver la valeur de mon histogramme à la position $i - 1$ en soustrayant `previous` de `c`. Avec ce code je devrais pouvoir retrouver $freq_{norm}(A, B, C, D) = (4, 2, 1, 1)$ avec une `table_log` de 3.
 
-> Le fait de devoir s'aligner sur une puissance de 2 selon moi devrait être optionel.
-> Ça nous permet de d'accelerer l'algorithme, oui, car les multiplication peuvent
-> facilement être remplacé par des shifts $\times{8} \iff \ll{3}$. Par contre,
+> Le fait de devoir s'aligner sur une puissance de 2 selon moi devrait être optionnel.
+> Ça nous permet d'accélérer l'algorithme, oui, car les multiplications peuvent
+> facilement être remplacées par des shifts $\times{8} \iff \ll{3}$. Par contre,
 > c'est un overhead à la compréhension de ce que __fait__ l'algo, donc ça nuit un peu
-> à notre expèrience.
+> à notre expérience.
 > 
-> J'ai péféré ne pas retirer le concepte. Étant donné que c'est quand même une
+> J'ai préféré ne pas retirer le concept. Étant donné que c'est quand même une
 > partie importante. En contre-partie, je vous aiderai au moment
 > où je considérerai qu'un petit coup de pouce est nécessaire.
 
