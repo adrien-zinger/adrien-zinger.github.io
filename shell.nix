@@ -1,8 +1,5 @@
 with (import <nixpkgs> {});
 mkShell {
-  shellHook = ''
-    zsh
-  '';
   buildInputs = [
     clang
     ruby_3_0
