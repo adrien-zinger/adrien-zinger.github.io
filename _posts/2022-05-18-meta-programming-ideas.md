@@ -2,10 +2,9 @@
 layout: default
 title:  "Templates, Concepts and traits"
 description: "
-The common thing between these three words is that they all are
-_programming ideas_ and not (perhaps) related to any language feature.
-If you want, it's the kind of ideas that know live in the soul of
-the modern programming."
+The common point about these three words is that they all are
+_programming ideas_ and almost not related to any language feature.
+Those are the kinds of ideas that are the soul of modern programming."
 
 authors: ["Adrien Zinger"]
 comments_id: 7
@@ -18,10 +17,9 @@ comments_id: 7
 
 
 
-The common thing between these three words is that they all are
-_programming ideas_ and not (perhaps) related to any language feature.
-If you want, it's the kind of ideas that know live in the soul of
-the modern programming.
+The common point about these three words is that they all are
+_programming ideas_ and almost not related to any language feature.
+Those are the kinds of ideas that are the soul of modern programming.
 
 If `templates` and `concepts` are a similar in the sens that it allow
 the user to do some _meta programming_, `traits` are an idiomatic system
@@ -32,7 +30,7 @@ another object to determine _policy_ or _implementation details_.
 
 In C++, templates are very common in the standard library. Even if it
 tends to be replaced with concepts, you have probably already seen one
-in your programmer life.
+in your programmer's life.
 
 It's all about genericness, if you're building a library, you probably
 want that the user could use it with any kind of input. If your library

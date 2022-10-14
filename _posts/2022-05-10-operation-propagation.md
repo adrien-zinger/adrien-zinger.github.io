@@ -2,10 +2,10 @@
 layout: default
 title:  "Data propagation with unstructured P2P"
 description: "
-In a P2P network, the propagation of an information is a big deal, especially with an
-open and unstructured network. Nevertheless, with the popularity of the blockchain and
-decentralization, we have to also being resilient to attacks or to weak nodes connecting
-and disconnecting... Here I show a little simple algorithm for that kind of propagation.
+In a P2P network, the spread of an information is very important, especially with an
+open and unstructured network. However, with the popularity of the blockchain and
+decentralization, we have to also being resilient to attacks or to weak nodes connection
+and disconnection... Here I show how we can propagate efficiently with a simple algorithm.
 "
 
 authors: ["Adrien Zinger"]

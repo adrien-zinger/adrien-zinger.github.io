@@ -2,10 +2,10 @@
 layout: default
 title:  "String concatenation in webassembly"
 description: "
-Develop a concatenation of strings in webassembly is the best
+Building a string concatenation in webassembly is the best
 entry point to understand the linear memory in a wasm instance.
 
-All is about how do you represent a structure with a sequence
+The whole point is how to represent a structure with a sequence
 of bytes. It is not so hard.
 "
 
@@ -15,7 +15,7 @@ comments_id: 8
 
 ## String concatenation in webassembly
 
-<span style="color: #A0A0A0">[2022-05-31] \#JS \#wasm \#interop
+<span style="color: #A0A0A0">[2022-05-31] \#JS \#wasm \#interoperability
 
 ---
 
@@ -50,18 +50,22 @@ like as in a classical dynamically linked library between compiled codes.
 > link you don't have to specify it explicitelly.
 >
 > Emscripten can produce wasm that are dynamically linked together. You can
-> So compile C into a webassembly binary and deal with a shared memory between
+> so compile a C code into a webassembly binary and deal with shared memories between
 > two wasm.
 >
 > In the future, it would be neat to be able to share the
-> memory with C/C++/Rust code from a VM like _wasmtime_ or _wasmer_.
+> memory with C/C++/Rust code compiled into classical binaries
+> and an instance of webassembly created by an embedder like
+> _wasmtime_ or _wasmer_.
 >
-> Another thing.
-> There is no garbage collection directly in the webassembly,
-> nevertheless, it could be done by an embedder. For example you can for each value
-> walk through their dependencies, and delete the unreachables objects. More simple, you
+> Note: WebAssembly is not a VM, even if we define some features and configurations
+> related to the VM inside it. It means that we don't have nativelly a garbage collector.
+> However, according to the binary structure, the embedder can define one
+> like the JS/Python VM does.
+> For example, you can for each value walk through their dependencies,
+> and delete any unreachables objects. Or simply, you
 > can store for each value a `pin` flag, then, on trigger the garbage collector, remove
-> all structures without that flag. 👏
+> any structures without this flag. 👏
 
 ## Writing a string
 
