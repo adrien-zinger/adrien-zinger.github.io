@@ -18,6 +18,35 @@
 </head>
 
 <body class="hack dark-grey">
+  <div class="theme-switch-wrapper">
+    <label class="theme-switch" for="checkbox">
+      <input type="checkbox" id="checkbox" />
+      <div class="slider round"></div>
+    </label>
+  </div>
+
+  <script>
+    const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+    function initTheme() {
+      const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : 'dark';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      if (currentTheme === 'dark') {
+        toggleSwitch.checked = true;
+      }
+    }
+    initTheme();
+    function switchTheme(e) {
+      if (e.target.checked) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      }
+    }
+    toggleSwitch.addEventListener('change', switchTheme, false);
+  </script>
+
   <div class="main container">
     {% if page.comments_id %}
     <a style="font-size: 15px" href="{{ site.url }}"><b>OTHER POSTS</b></a>
@@ -31,6 +60,7 @@
     {% include comments.html %}
     {% endif %}
   </div>
+
 </body>
 
 </html>
