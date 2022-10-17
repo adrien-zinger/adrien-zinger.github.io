@@ -231,17 +231,17 @@ Si la l'utilisation d'une table ressemblait à $symbole \implies bits$, le codag
 arithmétique ressemble plus à $(état, symbole) \implies état$. En bref, on
 construit une machine à état.
 
-Prenons une sequence de charactères. `ABADABAC`.
+Prenons une séquence de charactères. `ABADABAC`.
 
 Dans notre exemple, on a 4xA, 2xB, 1xC,
 1xD, 8 caractères au total. Donc les probabilites $P(A) = \frac{1}{2}$,
 $P(B) = \frac{1}{4}$, $P(C) = P(D) = \frac{1}{8}$.
 
 Prenons un segment de taille 1. On place $a$ d'un coté et $b$ de l'autre, tel
-que $a = 0$ et $b = 1$. On y ajoute des repères correspondants aux probabilités
-des symbols. On attribut un symble a tout ce qui se trouve entre ces repères. Le
-segment inferieur au repers A est pour A, le segment inferieur au repere B et
-superieur au repere A est pour B, etc.
+que $a = 0$ et $b = 1$. On y ajoute des repères correspondant aux probabilités
+des symboles. On attribut un symbole a tout ce qui se trouve entre ces repères. Le
+segment à gauche du repère A représente le symbole A, le à gauche du repère B et
+à droite A représente le symbole B, etc.
 
 Voila a quoi ca ressemble:
 
@@ -274,7 +274,7 @@ besoin de deux choses:
     $d(A, B, C, D) = (c(A) + P(A), ..., c(D) + P(D)) = (0.5, 0.75, 0.875, 1)$ ce qui
     nous donne les _valeurs hautes des sous-segments_.
 
-Remettre à l'échelle veux dire qu' $a := a + (b - a) * c(x)$, 
+Remettre à l'échelle veux dire $a := a + (b - a) * c(x)$, 
 $x$ est le caractère courrant à encoder $\in {A, B, C, D}$.
 Notez qu'on utilise $c(x)$ car on cherche _la valeur basse_.
 Et suivant le même principe, devient $b := a + (b - a) * d(x)$`.
@@ -350,8 +350,8 @@ l'intervalle diminue de moitié et l'échelle grandie !
 
 On reproduit cette étape, plusieurs fois, jusqu'à ce que l'intervalle chevauche
 la partie gauche ET la partie droite. C'était la phase 1. À ce stade, il ne faut
-pas diviser le segment par deux, mais par quatre. Un schéma vaut mieux que mille
-explications.
+pas diviser le segment par deux, mais par quatre. Un schéma vaut mieux qu'un millier
+d'explications.
 
 ![Retrouver les bits](/assets/img/aritm4.png)
 

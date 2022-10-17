@@ -37,24 +37,24 @@ want that the user could use it with any kind of input. If your library
 is doing an abstract sequence of operations with the input, there is no
 reasons to limit the client to a specific _Class_.
 
-Note that there is some cases where you precisely **want** to be
-specific. For example when you build a lib with physic's function, you
+Note that in some cases you precisely **want** to be
+specific. For example, when you build a lib with physic's function, you
 certainly want to introduce the specification of types like `Hz`, `km`.
-You can so remotely introduce some rules of calculations and
-assignations. It's an example but I'm sure there can exist a lot of
-reason to don't use generics programming's tools.
+You can so, remotely, introduce some rules of calculations and
+assignations. That's one example, but I'm sure there are many
+other situations in which generic programming tools should not be used.
 
-Unsurprisingly, the templates takes the form of `< T >` in many
+Unsurprisingly, templates take the form of `< T >` in many
 languages. I'll not go into details of the pattern because I'm sure you
 can google it if you don't know what is it.
 
 ## About concepts
 
-Hmf... 😬 In practice, concepts are very C++ oriented. But it introduce
+Hmf... 😬 In practice, concepts are very C++ oriented. But it introduces
 the idea of _Constraints_ that you cannot have with just templates!
-Basically, it move the resolution of the template very early in the
-compilation and give a flavour to the user to understand why the type
-doesn't match with the library.
+Basically, it moves the resolution of the template very early in the
+compilation and gives a flavor to the user to figure out why the type
+doesn't work with the library.
 
 In other words:
 
