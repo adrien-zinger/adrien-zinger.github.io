@@ -28,6 +28,7 @@ comments_id: 11
 ---
 
 # Ma quête vers la compression
+
 <span style="color: #A0A0A0">[2022-09-29] \#FSE \#Algorithmie \#Vie \#Compression
 
 ---
@@ -40,6 +41,7 @@ rendez-vous directement à la section
 
 Je me souviens avoir passé un entretien, un jour, ou j'ai dit que j'aimais bien
 l'algorithmie. Tout s'est bien passé, mais à la fin de l'entrevue on m'a répondu:
+
 > "C'est bizarre, tu dis que tu aimes l'algo, mais tu fais ça de cette manière ?
 > Tout le monde sait que ça peut être résolu en O de N sur deux !"
 
@@ -54,7 +56,7 @@ les classiques: des tris, des plus courts chemins, un allocateur, un alpha-beta
 pruning... et j'en passe.
 
 Mais même en connaissant mes classiques, je pourrais mettre un peu plus de cinq
-minutes pour ressortir un A* parfait, sans ressource. Je ne m'exerce pas tous
+minutes pour ressortir un A\* parfait, sans ressource. Je ne m'exerce pas tous
 les jours, et le monde de l'informatique est trop grand pour tout connaître, non
 ? Avec du recul, je sais aujourd'hui que cette partie en entretien n'a pas été
 décisive. J'étais suffisamment junior pour que ça se voit, même en baratinant.
@@ -84,8 +86,8 @@ leur mot à dire.
 "Finite State Entropy", basé sur les recherches de Jarek Duda il y a quelques
 années, a vraiment titillé ma curiosité. Je n'étais pas au bout de mes peines.
 Car, si trouver des infos sur des algos comme celui de Huffman, ou encore
-Lempel-Ziv-Welch, est simple; trouver une explication abordable de FSE est *très
-très* complexe. Réservé à l'élite des gens qui écoutaient vraiment en cours de
+Lempel-Ziv-Welch, est simple; trouver une explication abordable de FSE est _très
+très_ complexe. Réservé à l'élite des gens qui écoutaient vraiment en cours de
 master d'info.
 
 ## Zstd - L'enrôlement
@@ -112,7 +114,7 @@ autre langage ne pourrait qu'amener du positif.
 Outre le langage, sans connaître les enjeux de FSE, on fait une drôle de tête
 devant des fonctions comme celle de normalisation. Pleines de choix techniques et
 d'optimisations à partir de preuves mathématiques. Sans doute pour des
-performances exceptionnelles, mais waou, c'est chaud.
+performances exceptionnelles, mais trop difficile à prendre en main.
 
 Finalement, si je voulais comprendre FSE, ce n'était une bonne idée. Mais j'ai
 appris des choses, sur du langage C et de la culture G d'informaticien. C'est un
@@ -174,7 +176,7 @@ ce sont les "sans perte" et "avec perte". Ici, on s'interesse aux "sans perte",
 pour vous citer quelques noms: LZ4, LZW, FSE, ZIP, etc.
 
 Une bonne partie des algos utilisent des tables de compression, et d'autres non.
-Pour moi, les deux grandes familles sont: __TABLE__ ou __ARITHMETIQUE__.
+Pour moi, les deux grandes familles sont: **TABLE** ou **ARITHMETIQUE**.
 
 ## Chapitre 1, les tables de compressions - ouverture d'une parenthèse
 
@@ -262,19 +264,19 @@ besoin de deux choses:
 
 1. Une [fonction
    cumulative](https://en.wikipedia.org/wiki/Cumulative_distribution_function),
-    permet de savoir où le sous-segment d'un symbole commence.
+   permet de savoir où le sous-segment d'un symbole commence.
 
-    On veut diviser le segment. Avec $P(A, B, C, D) = (0.5, 0.25, 0.125, 0.125)$.
-    Calculer la CDF nous donne $c(A, B, C, D) = (0, 0.5, 0.75, 0.875)$, les
-    _valeurs basses des sous-segments_.
+   On veut diviser le segment. Avec $P(A, B, C, D) = (0.5, 0.25, 0.125, 0.125)$.
+   Calculer la CDF nous donne $c(A, B, C, D) = (0, 0.5, 0.75, 0.875)$, les
+   _valeurs basses des sous-segments_.
 
 2. Un cumul de la distribution ou la fréquence et de la fonction cumulative pour savoir où le
    symbole finit.
 
-    $d(A, B, C, D) = (c(A) + P(A), ..., c(D) + P(D)) = (0.5, 0.75, 0.875, 1)$ ce qui
-    nous donne les _valeurs hautes des sous-segments_.
+   $d(A, B, C, D) = (c(A) + P(A), ..., c(D) + P(D)) = (0.5, 0.75, 0.875, 1)$ ce qui
+   nous donne les _valeurs hautes des sous-segments_.
 
-Remettre à l'échelle veux dire $a := a + (b - a) * c(x)$, 
+Remettre à l'échelle veux dire $a := a + (b - a) * c(x)$,
 $x$ est le caractère courrant à encoder $\in {A, B, C, D}$.
 Notez qu'on utilise $c(x)$ car on cherche _la valeur basse_.
 Et suivant le même principe, devient $b := a + (b - a) * d(x)$`.
@@ -311,7 +313,6 @@ En binaire ca pourrait etre $.1_{b} = \frac{1}{2}$ <span>
 
 ...ou encore
 $.101_{b} = \frac{1}{2} + \frac{0}{2^2} + \frac{1}{2^3}$
-
 
 ```
 -- Phase 1
@@ -419,6 +420,7 @@ Pendant qu'un Huffman s'execute en `O(nlog n)` avec un histogramme non trié.
 </div>
 
 > "Même dans un Âge mythique, il doit y avoir des énigmes, comme il y en a toujours"
+>
 > <div style="text-align: right; margin: 0 15px;">- Tolkien</div>
 
 Avez-vous essayé de compresser cette séquence, avec l'algorithme de Huffman ?
@@ -470,7 +472,7 @@ $freq(A, B, C, D) = (42, 23, 10, 11)$.
 Pour avoir une jolie répartition, il faut appliquer une normalisation.
 
 Personnellement, j'en ai implémenté une très simple. Cette implem est loin
-d'être *l'Unique* ! Je vous laisse la liberté d'en proposer de nouvelles. Voire,
+d'être _l'Unique_ ! Je vous laisse la liberté d'en proposer de nouvelles. Voire,
 d'essayer de comprendre celle de Facebook, hein, on ne sait pas hein, elle est
 peut-être un peu élaborée. Si l'occasion se présente, envoyez-moi vos progrès,
 j'y trouverai un grand intérêt.
@@ -499,8 +501,8 @@ pub fn simple_normalization(
 
 J'utilise pour la première fois le concept de `table_log`. Cette variable, à
 part le fait qu'on dise qu'on doit s'aligner sur $2^{tableLog}$, a un réel
-impact sur la compression. Elle joue le rôle de *potentiomètre* concernant la
-vitesse d'exécution __et__ la qualité de compression. Une `table_log` élevée
+impact sur la compression. Elle joue le rôle de _potentiomètre_ concernant la
+vitesse d'exécution **et** la qualité de compression. Une `table_log` élevée
 tendra à augmenter la précision de la normalisation. Il y aura moins de `1` dans
 l'histogramme. Cependant, augmenter cette variable va aussi nuire à
 l'algorithme. Jusqu'à finir par donner une sortie plus grande que l'entrée.
@@ -510,20 +512,20 @@ d'arriver moins vite à des états élevés qui prennent plus de temps de CPU po
 utiliser une valeur trop basse peut nuire à notre normalisation en la rendant
 impossible à réaliser, il faut trouver le juste équilibre.
 
-1) Je calcule la fonction cumulative de mon histogramme. Mon histogramme, c'est
+1. Je calcule la fonction cumulative de mon histogramme. Mon histogramme, c'est
    simplement une liste de fréquences. J'applique la _CDF_, tel que $cdf_i =
    cdf_{i - 1} + freq_i$ et $cdf_0 = 0$. En suivant mon exemple, je trouve $max
    = 90$. J'aimerais transposer chaque valeur depuis l'échelle $[0, 90]$, sur
    l'intervalle $[0, 2^3]$.
 
-2) J'applique un [mapping](https://en.wikipedia.org/wiki/Linear_map). Vu que l'histogramme est la dérivée de ma fonction cumulative, je peux retrouver la valeur de mon histogramme à la position $i - 1$ en soustrayant `previous` de `c`. Avec ce code je devrais pouvoir retrouver $freq_{norm}(A, B, C, D) = (4, 2, 1, 1)$ avec une `table_log` de 3.
+2. J'applique un [mapping](https://en.wikipedia.org/wiki/Linear_map). Vu que l'histogramme est la dérivée de ma fonction cumulative, je peux retrouver la valeur de mon histogramme à la position $i - 1$ en soustrayant `previous` de `c`. Avec ce code je devrais pouvoir retrouver $freq_{norm}(A, B, C, D) = (4, 2, 1, 1)$ avec une `table_log` de 3.
 
 > Le fait de devoir s'aligner sur une puissance de 2 selon moi devrait être optionnel.
 > Ça nous permet d'accélérer l'algorithme, oui, car les multiplications peuvent
 > facilement être remplacées par des shifts $\times{8} \iff \ll{3}$. Par contre,
-> c'est un overhead à la compréhension de ce que __fait__ l'algo, donc ça nuit un peu
+> c'est un overhead à la compréhension de ce que **fait** l'algo, donc ça nuit un peu
 > à notre expérience.
-> 
+>
 > J'ai préféré ne pas retirer le concept. Étant donné que c'est quand même une
 > partie importante. En contre-partie, je vous aiderai au moment
 > où je considérerai qu'un petit coup de pouce est nécessaire.
@@ -713,7 +715,7 @@ $e´(s, e)=\lfloor \frac{e}{freq(s)} \rfloor \times t + cdf(s) + s \% freq(s)$
 
 Si on prend notre exemple de fréquences avec $f_A = 4$ et $f_C = 1$, on se rend compte que $e´(A, e) \times{4} \approx e´(C, e)$ avec `t` une puissance de 2. De plus on se rend compte que $f_A = f_C \times{4}$. Pour être tout à fait honnête, je doute encore de mon raisonnement. Mais si mon état est inférieur à ma fréquence shiftée de `32 - table_log`, il n'y a aucune raison que mon prochain état dépasse les 32 bits.
 
-Pour décoder, c'est exactement l'inverse. J'ajoute les bits depuis mon stream, s'il y 
+Pour décoder, c'est exactement l'inverse. J'ajoute les bits depuis mon stream, s'il y
 en a, pour reconstruire mon état tel qu'il devrait être.
 
 ```rust
@@ -733,10 +735,10 @@ if state < 2usize.pow(16) {
 
 C'est un peu prématuré comme fin. Non ? Moi j'ai envie d'en savoir plus en tout cas.
 
-Comme d'habitude, en fouillant un peu dans mon code_bucket sur github vous
+Comme d'habitude, en fouillant un peu dans mon code*bucket sur github vous
 trouverez un peu de code. Lorsque le code sera mature j'en ferai une
 bibliothèque bien sûr. N'hésitez pas à me poser une question sur ce répo ou en
-MP par mail. Je serai content de vous aider, ou du moins *essayer*.
+MP par mail. Je serai content de vous aider, ou du moins \_essayer*.
 
 Pour l'instant, je ne peux que conclure que la compression de données, c'est
 compliqué. Par exemple, cet article fait une taille environ de 238000 bits. Avec

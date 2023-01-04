@@ -29,5 +29,6 @@
         "Youssef",
         "Zaida"
     ],
-    "markdown.preview.breaks": false
+    "markdown.preview.breaks": false,
+    "rewrap.wrappingColumn": 79
 }
