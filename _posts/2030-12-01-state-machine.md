@@ -51,13 +51,26 @@ séquentielle. Dans le cas où c'est important, je montre comment améliorer les
 performances quand les événements arrivent rapidement. Néanmoins, je ne dis pas
 quand ce cas est effectivement important. Les parties traitant ce sujet offrent
 l'occasion de regarder de plus près des mécanismes utiles dans des programmes
-multithreadés.
+multithreadés. C'est plus "intéressant" qu'utile, je ne peux pas
+préciser dans quel contexte ces mécanismes sont utilisé dans "la vrai vie" !
+Mais elles existe et sont souvent utilisé pour des raisons parfois
+arbitraires, à cause de croyances personnels, ou bien de connaissance poussé
+du sujet. Ou encore plus simplement, parce que le sous-problème nécessite une
+attention particulière. Il doit être le plus performant possible, donc on essaie
+de multiples méthodes.
 
 J'aborde donc l'utilisation de structures de données non-bloquantes. Je parle
-en particulier des opérations atomiques. Je tiens à préciser que ce sujet est
-bien plus complexe que ce qu'il laisse paraître. Dans ce post, je vous
-informerai de ce que je maîtrise et ne maîtrise pas suffisamment, tout en
-donnant des pistes pour approfondir le sujet.
+en particulier d'opérations atomiques. Je tiens à préciser que ce sujet est
+bien plus complexe que ce qu'il laisse paraître. Changer une structure en
+une autre structure non-bloquante, comme par exemple un table de hashage,
+peut avoir de gros impactes. Parfois, l'espace mémoire que la structure
+prendra sera bien plus grande que l'original. Autrement, il faudra faire des
+concessions sur les performances. A vous de choisir où mettre les priorités.
+
+J'en profite pour vous prévenir, je suis conscient de maîtriser certaines
+aspects et pas d'autres. Même si j'ai le sentiment d'être dans le vrai, n'hésitez
+pas à me corriger si vous y voyez de grosse erreurs! Et il y en aura probablement,
+même après une centaine de relectures.
 
 
 ## Pourquoi une machine à états ? 
@@ -451,41 +464,50 @@ autre thread du même programme va essayer de lire ou écrire pendant
 le temps de l'opération. Enfin, cette opération garantis un ordre
 définis que le processeur doit respecter.
 
-De base, si vous n'avez pas un ordinateur trop exotique, toutes les
-opérations que vous effectuez sont "atomiques", dans le sens ou aucun
-thread ne peut acceder à un espace mémoire en même temps qu'un autre.
-En d'autre termes, lorsque le programme demande au processeur la
-ligne mémoire dans laquel se trouve une variable, le processeur
-va mettre en place des sécurités (comme de l'invalidation de cache) afin
-qu'on ne puisse pas lire une information à moitiée ecrite. Ceci est
-vrai uniquement pour les types primitifs.
+De base, sur un processeur intel, tout mouvement ou copie est, selon ce qu'on
+entend par là, atomique. Prenons l'instruction `mov` sur `x86`. Cette
+instruction permet selon son utilisation de copier une valeur ou de copier
+l'adresse de cette valeur. C'est cette diférence qui implique un déplacement
+*par copie* ou par *référence*. Elle peut être utilisé pour lire ou écrire,
+selon le sens dans lequel on place ces arguments. lorsqu'une instruction mov de
+lecture est exécutée, elle a un comportement similaire à l'ordonancement
+définis par *ACQUIRE* et lorsqu'une instruction mov d'écriture est exécutée,
+elle a un comportement similaire à l'ordonancement définis par *RELEASE*. Ce,
+sans avoir besoin de préciser quoi que ce soit. Sur `x86`, l'ordonnancement
+*RELAXED* est chimérique. On remarque que des opérations atomiques
+avec le flag *RELAXED* produisent le même résultat que des opérations dites "non-atomique".
 
-Toute les opérations sont "atomiques", mais sont appelées
-"non-atomique" tant que le programme ne le précise pas. Une
-opération précisée comme atomique dans un programme peut
-garantir un ordre de lecture et écriture des variables dans
-un même thread.
+Toute les opérations sont de l'écture et d'écriture sont donc "atomiques" sur `x86`.
+Mais pas sur tout les processeurs. Sur `ARM` par exemple, on devra utiliser des
+instructions tel que `dmb` pour préciser un ordre *ACQUIRE-RELEASE*. L'instruction `dmb`
+(data memory barrier) garantit que toutes les instructions de lecture ou écriture en
+mémoire exécutées avant elle sont terminées avant que celles exécutées après ne le soient.
+Il convient donc de dire, en écrivant du code plus haut niveau, comme du *Rust* ou du *C*,
+que toute les opérations sont "non-atomique" tant que le code ne précise rien.
 
 Le processeur, pour plusieurs raisons, a le droit de superposer
 des opérations sur un thread. Ce qui peut rendre un programme
-avec des executions parrallèle compliqué à se représenter.
+avec des executions parrallèle difficile à se représenter.
 Avec des opérations atomiques et les flags `Acquire`, `Release`
 et `SeqCst`, on peut forcer le processeur à ne plus superposer les
 lectures et ecriture. On peut forcer un certain ordre, ou du moins,
 certaines contraintes.
 
-Certains processeurs ne sont pas capable de superposer les
-opérations. Dans ce cas, le programme sera le même quoi qu'il
-arrive. On peut aussi noter, qu'une des opérations atomiques
-avec le flag `Relaxed` produit le même résultat qu'une
-opération dite non-atomique.
+Une variable peut être atomique dans le cas où elle est assez petite.
+Elle est généralement une version d'un type primitif. On peut lui
+donner des ordonnacement d'accès en lecture et ecriture de manière
+à ce que différents threads ne tombent pas dans des *data races*.
+Et dans tout les cas, il est préférable, si on utilise ces variables,
+de donner l'ordonnancement `SeqCst` qui est la contrainte la plus
+élevée.
 
 ## Atomique ou pas atomique
 
-Les exemples suivant on été compilé sur ma machine personnelle.
-Mes résultats sont plus que sucéptibles de varier en fonction
-de votre architecture. Par contre, ce que j'obtiens moi est
-plutôt intéressant pour comprendre les opérations atomiques.
+Il existe certains cas ou les choses peuvent bien se
+passer, même sans préciser l'atomicité dans le code. Ou avec des ordonnancements
+plus faible que `SeqCst`. Notamment sur des processeurs
+`x86`. C'est intéressant de savoir pourquoi et comment le mécanisme
+est traduit en instructions.
 
 Voici le même programme ecrit plusieurs façons différentes. Le
 programme consiste en deux threads. L'un produit, l'autre
