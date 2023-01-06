@@ -569,7 +569,7 @@ possible non plus avec nos techniques. Mais imaginez quand même:
 
 Disons que je suis à l'état 1, mon symbole actuel c'est A. Je cherche à encoder
 le symbole B, je dois trouver le prochain état correspondant. Je récupère la
-fréquence de B, que je divise par à mon état actuel pour trouver le segment sur
+fréquence de B, que je divise par mon état actuel pour trouver le segment sur
 lequel je vais aller. Eh oui, car par segment, d'après ma répartition, j'ai
 $freq(B)$ symbole B.
 
@@ -591,9 +591,6 @@ $NouvelEtat(Symbol, Etat)=\lfloor \frac{Etat}{freq(Symbol)} \rfloor \times total
 > Ici le fait d'être aligné sur une puissance de 2 nous permet de remplacer $\times{totalFreqs}$
 > par un shift. Le total est égal à $2^{tableLog}$ d'où
 > $n \times{totalFreqs} \iff n \ll{tableLog}\$
-
-Pour l'instant on ne sait pas trop encore comment on va décoder tout ça. Mais on
-se dit qu'il doit bien y avoir une formule pour retrouver l'état précédent non ?
 
 ```rust
 pub fn not_scalable_encode(

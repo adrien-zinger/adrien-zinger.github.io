@@ -297,7 +297,6 @@ int state_machine()
     {
         void *_;
         pthread_join(st->scan, _);
-        free(re->state);
         return EXIT_SM;
     }
     st->step(st);
@@ -394,75 +393,61 @@ static struct Entry receive_state(struct Reagir *re)
 }
 ```
 
-Un appel à `dispatch` créer une nouvelle entrée. Cette
-fois-ci, l'en trée est une information qui serait traitée
-par la bibliothèque afin de passer d'un état à un autre.
-Tant que la bibliothèque peut faire défiler ces entrées,
-on avance dans la machine à états. On ne s'attend pas
-spécialement à un état final, simplement à continuer
-d'avancer.
+Un appel à `dispatch` créer une nouvelle entrée. Cette fois-ci, l'en trée est
+une information qui serait traitée par la bibliothèque afin de passer d'un état
+à un autre. Tant que la bibliothèque peut faire défiler ces entrées, on avance
+dans la machine à états. On ne s'attend pas spécialement à un état final,
+simplement à continuer d'avancer.
 
-Prenons un peu le temps de lire l'algorithme de la figure
-précédente. On remarque que ce code contient plusieurs
-locks. Un lock coûte au processeur. En tout cas c'est
-ce que j'ai appris. D'ici quelques années, j'aurai peut
-être tort de dire ça, mais si possible, aujourd'hui il
-est préférable d'éviter d'invoquer un lock du procésseur.
+Prenons un peu le temps de lire l'algorithme de la figure précédente. On
+remarque que ce code contient plusieurs locks. Un lock coûte au processeur. En
+tout cas c'est ce que j'ai appris. D'ici quelques années, j'aurai peut être
+tort de dire ça, mais si possible, aujourd'hui il est préférable d'éviter
+d'invoquer un lock du procésseur.
 
-Cette implémentation est peut être suffisante pour
-mon exemple ? Je n'ai pas besoin de code particulièrement
-rapide. Mais je peux encore aller plus loin. Je pourrais
-par exemple retirer complètement les locks.
+Cette implémentation est peut être suffisante pour mon exemple ? Je n'ai pas
+besoin de code particulièrement rapide. Mais je peux encore aller plus loin. Je
+pourrais par exemple retirer complètement les locks.
 
-L'utilisation que je fais de ma machine à état
-dans mon exemple est synchrone! Même si j'utilise
-deux threads différents. Je ne lis pas d'entrée utilisateur
-pendant l'execution de la boucle de la machine à états,
-ou même avant. A aucun moment, je peux envoyer un évennement
-ET en recevoir simultanement. Les lignes S2, S9 R1 et R8
-sont donc inutiles dans mon cas.
+L'utilisation que je fais de ma machine à état dans mon exemple est synchrone!
+Même si j'utilise deux threads différents. Je ne lis pas d'entrée utilisateur
+pendant l'execution de la boucle de la machine à états, ou même avant. A aucun
+moment, je peux envoyer un évennement ET en recevoir simultanement. Les lignes
+S2, S9 R1 et R8 sont donc inutiles dans mon cas.
 
-Même si mon programme communiquait avec d'autres,
-s'assuré d'un ping pong où chaque instance attend
-la réponse de l'autre peut être résolu sans aucun
-appel à lock, autre que par l'invocation de `wait`.
+Même si mon programme communiquait avec d'autres, s'assuré d'un ping pong où
+chaque instance attend la réponse de l'autre peut être résolu sans aucun appel
+à lock, autre que par l'invocation de `wait`.
 
-Attention, le fait d'avoir une utilisation synchrone
-de cette file est l'unique justification valable pour
-retirer les invocations de lock. Des appels concurrents
-auraient des résultats imprévisibles! Par mesure de
-sécurité, il faut toujours entourer les variables
-conditionnelles par des appels de lock. Prenez ça
-comme une rêgle d'or.
+Attention, le fait d'avoir une utilisation synchrone de cette file est l'unique
+justification valable pour retirer les `lock`. Des appels concurrents auraient
+des résultats imprévisibles ! Par mesure de sécurité, il faut toujours entourer
+les variables conditionnelles par des `lock`. Prenez ça comme une rêgle d'or.
 
-Dans notre cas, on retire quelques utilisations de mutex
-et ça marche. Cependant, si on souhaite quelque chose
-de plus puissant qui nous autorise toujours des lectures
-et écritures parrallèles, il faut se tourner vers des
+Dans notre cas, on retire quelques utilisations de mutex et ça marche.
+Cependant, si on souhaite quelque chose de plus puissant qui nous autorise
+toujours des lectures et écritures parrallèles, il faut se tourner vers des
 structures plus efficaces.
 
-Dans un contexte où on recevrait beaucoup d'évenements,
-une structure de donnée non bloquante pourrait être
-intéressante. Il y a un grand nombre d'implémentation
-possible, à commencer par utiliser deux mutex différents
-pour la tête de file et le bout de file. Les producteurs
-se partageraient un mutex et le consommateur sera
-plus rapide pour lire, aillant le monopole sur le defilement.
+Dans un contexte où on recevrait beaucoup d'évenements, une structure de donnée
+non bloquante pourrait être intéressante. Il y a un grand nombre
+d'implémentation possible, à commencer par utiliser deux mutex différents pour
+la tête de file et le bout de file. Les producteurs se partageraient un mutex
+et le consommateur sera plus rapide pour lire, aillant le monopole sur le
+defilement.
 
-Plus rapide encore, une version de la file de Mickael-Scott
-propose une solution n'utilisant aucun mutex. L'algorithme tire
-avantage des fonctions atomiques du processeur. En d'autre
-termes, la lecture ou l'écriture d'une variable sera organisé
-parmis les différents threads dans un ordre spécifié.
+Plus rapide encore, une version de la file de Mickael-Scott propose une
+solution n'utilisant aucun mutex. L'algorithme tire avantage des fonctions
+atomiques du processeur. En d'autre termes, la lecture ou l'écriture d'une
+variable sera organisé parmis les différents threads dans un ordre spécifié.
 
 ## Rapide rappel atomique
 
-Une opération atomique, c'est lire, ecrire, effectuer une opération
-basique comme `ET` ou `OU`, sur une petite partie de mémoire comme
-par exemple là où se trouve un entier. Cette opération garantis qu'aucun
-autre thread du même programme va essayer de lire ou écrire pendant
-le temps de l'opération. Enfin, cette opération garantis un ordre
-définis que le processeur doit respecter.
+Une opération atomique, c'est lire, ecrire, effectuer une opération basique
+comme `ET` ou `OU`, sur une petite partie de mémoire comme par exemple là où se
+trouve un entier. Cette opération garantis qu'aucun autre thread du même
+programme va essayer de lire ou écrire pendant le temps de l'opération. Enfin,
+cette opération garantis un ordre définis que le processeur doit respecter.
 
 De base, sur un processeur intel, tout mouvement ou copie est, selon ce qu'on
 entend par là, atomique. Prenons l'instruction `mov` sur `x86`. Cette
@@ -474,49 +459,50 @@ lecture est exécutée, elle a un comportement similaire à l'ordonancement
 définis par *ACQUIRE* et lorsqu'une instruction mov d'écriture est exécutée,
 elle a un comportement similaire à l'ordonancement définis par *RELEASE*. Ce,
 sans avoir besoin de préciser quoi que ce soit. Sur `x86`, l'ordonnancement
-*RELAXED* est chimérique. On remarque que des opérations atomiques
-avec le flag *RELAXED* produisent le même résultat que des opérations dites "non-atomique".
+*RELAXED* est chimérique. On remarque que des opérations atomiques avec le flag
+*RELAXED* produisent le même résultat que des opérations dites "non-atomique".
 
-Toute les opérations sont de l'écture et d'écriture sont donc "atomiques" sur `x86`.
-Mais pas sur tout les processeurs. Sur `ARM` par exemple, on devra utiliser des
-instructions tel que `dmb` pour préciser un ordre *ACQUIRE-RELEASE*. L'instruction `dmb`
-(data memory barrier) garantit que toutes les instructions de lecture ou écriture en
-mémoire exécutées avant elle sont terminées avant que celles exécutées après ne le soient.
-Il convient donc de dire, en écrivant du code plus haut niveau, comme du *Rust* ou du *C*,
-que toute les opérations sont "non-atomique" tant que le code ne précise rien.
+Toute les opérations sont de l'écture et d'écriture sont donc "atomiques" sur
+`x86`. Mais pas sur tout les processeurs. Sur `ARM` par exemple, on devra
+utiliser des instructions tel que `dmb` pour préciser un ordre
+*ACQUIRE-RELEASE*. L'instruction `dmb` (data memory barrier) garantit que
+toutes les instructions de lecture ou écriture en mémoire exécutées avant elle
+sont terminées avant que celles exécutées après ne le soient. Il convient donc
+de dire, en écrivant du code plus haut niveau, comme du *Rust* ou du *C*, que
+toute les opérations sont "non-atomique" tant que le code ne précise rien.
 
-Le processeur, pour plusieurs raisons, a le droit de superposer
-des opérations sur un thread. Ce qui peut rendre un programme
-avec des executions parrallèle difficile à se représenter.
-Avec des opérations atomiques et les flags `Acquire`, `Release`
-et `SeqCst`, on peut forcer le processeur à ne plus superposer les
-lectures et ecriture. On peut forcer un certain ordre, ou du moins,
-certaines contraintes.
+Le processeur, pour plusieurs raisons, a le droit de superposer des opérations
+sur un thread. Ce qui peut rendre un programme avec des executions parrallèle
+difficile à se représenter. Avec des opérations atomiques et les flags
+`Acquire`, `Release` et `SeqCst`, on peut forcer le processeur à ne plus
+superposer les lectures et ecriture. On peut forcer un certain ordre, ou du
+moins, certaines contraintes.
 
-Une variable peut être atomique dans le cas où elle est assez petite.
-Elle est généralement une version d'un type primitif. On peut lui
-donner des ordonnacement d'accès en lecture et ecriture de manière
-à ce que différents threads ne tombent pas dans des *data races*.
-Et dans tout les cas, il est préférable, si on utilise ces variables,
-de donner l'ordonnancement `SeqCst` qui est la contrainte la plus
-élevée.
+Une variable peut être atomique dans le cas où elle est assez petite. Elle est
+généralement une version d'un type primitif. On peut lui donner des
+ordonnacement d'accès en lecture et ecriture de manière à ce que différents
+threads ne tombent pas dans des *data races*. Et dans tout les cas, il est
+préférable, si on utilise ces variables, de donner l'ordonnancement `SeqCst`
+qui est la contrainte la plus élevée.
 
 ## Atomique ou pas atomique
 
-Il existe certains cas ou les choses peuvent bien se
-passer, même sans préciser l'atomicité dans le code. Ou avec des ordonnancements
-plus faible que `SeqCst`. Notamment sur des processeurs
-`x86`. C'est intéressant de savoir pourquoi et comment le mécanisme
-est traduit en instructions.
+Il existe certains cas ou les choses peuvent bien se passer, même sans préciser
+l'atomicité dans le code. Ou avec des ordonnancements plus faible que `SeqCst`.
+Notamment sur des processeurs `x86`. C'est intéressant de savoir pourquoi et
+comment le mécanisme est traduit en instructions.
 
-Voici le même programme ecrit plusieurs façons différentes. Le
-programme consiste en deux threads. L'un produit, l'autre
-consomme. Le producteur incrémente une variable jusqu'à
-ce quelle soit égale à 5, l'autre lis tant que la même
-variable ne vaut pas 5. Après quoi, le programme s'arrête.
+Pour observer les instructions qu'un processeurs intel peut comprendre, on peut
+commencer par écrire avec un langage haut niveau, les différents concepts que
+la plupart des languages nous offrent. J'ecris donc un programme de diférentes
+façon, avec des méthodes plus ou moins validées par la communauté des
+développeurs. Ce programme consiste principalement en deux threads. L'un
+produit, l'autre consomme. Le producteur incrémente une variable jusqu'à ce
+quelle soit égale à 5, l'autre lit tant que la même variable ne vaut pas 5.
+Après quoi, le programme s'arrête.
 
-Je vous épargnerai les déclarations de bibliothèques et la
-fonction de démarrage. On se concentrera sur les threads.
+Je vous épargnerai les déclarations de bibliothèques et la fonction de
+démarrage. On se concentrera sur les threads.
 
 La première version utilise des mutexes.
 
@@ -544,16 +530,19 @@ void *consumer_thread(void *counter)
 }
 ```
 
-Dans cette version, mon postulat est que l'invocation d'un
-bloquage autour de ma variable est inutilement couteuse. En
-plus, je dois gérer une variable globale pour y controller
-l'accès. 1 sur 20, parce que ça fonctionne.
+Dans cette version, mon postulat est que l'invocation d'un verrou autour de ma
+variable est inutilement couteuse. En plus, je dois gérer une variable globale
+pour controller l'accès. Cette méthode est particulièrement utilisée lorsque le
+type de `counter` n'est pas primitif. Si c'était une structure ou un tableau,
+cette méthode aurait acceptable.
 
-Je constate alors que ma variable est un type primitif. Je
-peut utiliser la bibliothèque standart disponible dans
-pratiquement tout les langages compilés !
+A noter que ici, il serait simple de modifier le programme de façon à ce qu'on
+ai plusieurs producteurs sans créer de comportement indéfini. Il suffirai que
+dans la boucle du producteur on teste la variable pour voir si elle est déjà
+égale à 5. Le cas échéant, on retourne un erreur ou on sort simplement de la
+fonction.
 
-Voilà la deuxième version, amélioré:
+Voilà la deuxième version:
 
 ```c
 void *producer_thread(void *counter)
@@ -579,22 +568,26 @@ void *consumer_thread(void *counter)
 }
 ```
 
-Cette fois-ci, plus de mutex et j'immagine, plus de verouillage.
-On utilise une opération atomique basique `fetch_add` qui va,
-sans surprise, faire récupérer la valeur, ajouter `1`, puis écrire
-à l'adresse la nouvelle valeur.
+Cette fois-ci, plus de mutex et j'immagine, plus de verouillage. On utilise une
+opération atomique basique `fetch_add` qui va, sans surprise, faire récupérer
+la valeur, ajouter `1`, puis écrire à l'adresse la nouvelle valeur.
 
-`fetch_add` va produire la ligne instruction `lock xaddl %edx, (%rax)`.
-Voilà c'est une opération d'addition entre edx et rax, avec le
-prefix lock. Ce préfixe permet entre autre de préciser au
-processeur que la valeur de la cible ne peut pas être changer
-pendant l'instruction. Dans ce cas, les instructions ne vont
-rien préciser de plus sur l'ordre de lecture et écriture.
-Ce qui est plutôt décevant.
+`fetch_add` va produire la ligne instruction `lock xaddl %edx, (%rax)`. Voilà
+c'est une opération d'addition entre edx et rax, avec le prefix lock. Ce
+préfixe permet entre autre de préciser au processeur que la valeur de la cible
+ne peut pas être changer pendant l'instruction. Utiliser cette fonction est
+considéré comme `wait-free` si vous êtes familier avec les types d'algorithmes
+multithreadés.
 
-La dernière version n'utilise même plus d'opérations atomiques
-et fonctionne parfaitement. Cette version ne marche que parce
-que les instructions MOV\* sont intrinsequement atomiques.
+La version ci-dessus nous empêche d'avoir plusieurs producteurs. Effectivement,
+on risque d'avoir une variable temporaire `c` qui ne soit plus la bonne,
+cependant, on continue à incrémenter le compteur. Ce risque de *data race* est
+à prendre en compte. Même si dans ce cas, tout va bien. 
+
+La dernière version n'utilise même plus d'opérations atomiques et fonctionne
+parfaitement. Cette version ne marche que parce que les instructions `mov` ont
+le même comportement entre eux que des variables atomiques avec
+l'ordonnancement *ACQUIRE-RELEASE*.
 
 ```c
 void *producer_thread(void *counter)
@@ -612,20 +605,28 @@ void *consumer_thread(void *counter)
 }
 ```
 
-Normalement, un processeur optimisé pour aller lire
-du cache de façon spéculative peut buter sur un spinlock.
-Si les lectures et écritures sont ordonnés faiblement,
-le processeur pourrait lire une valeur avant qu'elle
-soit prête. Mais la plupart du temps, forcer l'ordre d'accès
-à une adresse n'est pas traduit en instructions. Ce qui est
-plutôt décevant. Car l'architecture ne permettrait simplement
-pas de lecture spéculative. Celà dit, ça reste un bonne
-pratique de faire tout comme et d'écrire un "programme
-atomique" avec la plus forte réstriction possible.
+En fait, qu'on utilise *RELAXED* ou *ACQUIRE/RELEASE*, ça ne change rien. Celà
+dit, utiliser l'ordonnancement par défaut, *SeqCst* (Sequentiellement
+Consistent), reste la meilleur pratique. Ne vous risquez pas trop à changer
+cette rêgle pour des bouts de chandelles de performance.
 
-Spécifier un ordre dans lequel les threads vont accéder à
-une variable est possible dans quasiment tout les langages
-permettant la parrallèlisation des executions.
+Ici, la version ne permet pas du tout d'avoir de multiples producteurs. Pas du
+tout. En fait, on pourrait la modifier légèrement en utilisant la fonction
+atomique `compare_and_swap` dans la boucle du producteur. Cette fonction permet
+de vérifier si la valeur de `c` est bien celle qui se trouve dans le compteur.
+Et si ce n'est pas le cas, on récupère la valeur actuelle, et on essaie à
+nouveau si besoin. `compare_and_swap` est l'élément qui manquait aussi à la
+deuxième version. Cependant, si l'utilisation de `fetch_add` est *wait-free*,
+l'equivalent sans les *data race* avec `compare_and_swap` est *lock-free*.
+
+Spécifier un ordre dans lequel les threads vont accéder à une variable est
+possible dans quasiment tout les langages permettant la parrallèlisation des
+executions. En Go, il n'est possible d'utiliser que l'ordonnancement *SeqCst*.
+En Rust, les types atomiques sont identiques au C/C++.
+
+Changeons de sujet. avec l'atomicité, on peut simuler ce que ferai un mutex
+autour d'une variable. Voici l'exemple le plus classique que vous pourrez
+trouver à propos des opérations de lécture et écrture atomiques.
 
 ```rust
 fn thread_a(atomic_bool: Arc<AtomicBool>, val: Arc<AtomicU32>) {
@@ -642,64 +643,121 @@ fn thread_b(atomic_bool: Arc<AtomicBool>, val: Arc<AtomicU32>) {
     assert!(b);
     assert_eq!(v, 42);
 }
+```
 
-fn main() {
-    let boola = Arc::new(AtomicBool::from(false));
-    let boolb = boola.clone();
-    let vala = Arc::new(AtomicU32::default());
-    let valb = vala.clone();
-    std::thread::spawn(|| thread_a(boola, vala));
-    let th = std::thread::spawn(|| thread_b(boolb, valb));
-    let _ = th.join();
+La figure ci-dessus est un exemple de synchronization. De la même manière qu'un
+lock de mutex relaché dans un thread A puis aquis dans un thread B, ce qui à
+été stoqué par le thread A est visible par le thread B.
+
+Une écriture avec un ordre atomique `Release` implique qu'aucune écriture ou
+lecture dans le même thread ne peut être réorganiser par le processeur. Que
+l'opération soit atomique ou non-atomique. En plus, toute écriture dans une
+variable devient visible par tout les autres threads voulant lire avec un ordre
+atomique `Acquire`.
+
+Pour résumer simplement, val est comme protégé par un mutex. Cette façon
+d'attendre activement l'accès à une ressource s'appel un spinlock. Très utiles
+dans certains cas, et bien trop gourmant en ressource dans d'autre.
+
+Sans l'utilisation de lecture et écriture atomique, un programme se risquerai à
+un comportement indéfini sur quelques processeurs. Et d'ailleurs le compilateur
+de Rust permettrait pas d'écrire le code sans l'utilisation du mot clef
+`unsafe`.
+
+
+## L'état dans lequel je suis
+
+Une machine à états conserve toujours au moins sont état actuel. Que cet état
+soit représenté par une variable, une pile, ou simplement par la position de
+l'execution sur la stack.
+
+Pour Reagir comme pour React, les états sont des variables qu'on récupère à un
+moment de l'execution. En C, l'état ne peut pas se trouver sur la pile. Si
+c'était le cas, on ne pourrait jamais dépiler les executions et le programme
+grossirait en mémoire continuellement. Les états de la bibliothèque Reagir sont
+donc quelque part sur le tas. Par défaut, ils sont constants ou statiques.
+
+Dans la vie, ce n'est pas toujours pratique d'avoir des états constants et
+immutables. Dans la plupart des exemples qu'on trouve avec React, l'état est
+modifié. Personnellement, j'aime considérer l'état comme une base avec laquelle
+je profile l'execution, puis créé l'état suivant si besoin. Contrairement au
+Rust, C me donne la libertée de créer des variables statiques mutables. Ce qui
+rend ce vieux langage non *memory safe*. En contre partie, ça me permet de ne
+pas à avoir à alouer de mémoire dynamiquement, et surtout, d'avoir un code
+petit.
+
+```c
+/// Création de l'état initial
+void *make_init_state()
+{
+    static char val[300] = {'\0'};
+    static struct State st = {
+        val,
+        0,
+        zero,
+        first_print,
+        0,
+    };
+    return &st;
+}
+
+int state_machine()
+{
+    struct Reaction *re = use_state(make_init_state);
+    struct State *st = re->state; // Récupération de l'état
+    // ...
 }
 ```
 
-La figure ci-dessus est un exemple de synchronization. De la même
-manière qu'un lock de mutex relaché dans un thread A puis aquis
-dans un thread B, ce qui à été stoqué par le thread A est
-visible par le thread B.
+Un choix arbitraire pris ici, est l'argument qu'on donne à la fonction
+`use_state`. Avec React, on donne directement une référence vers l'état
+initial, puis on utilise la référence du scope pour le reste de l'éxecution. Ce
+n'est pas très pratique pour un model de mémoire sans *garbage collector*. Le
+choix de passer une fonction d'initialisation tout de même, malgré les
+contraintes du langage, plutôt arbitraire. J'imagine sans mal qu'il y a de
+nombreuses méthodes alternatives. Certaines me viennent à l'esprit en écrivant
+ces lignes. Néanmoins, je ne trouve pas de gros défauts à cette implémentation.
 
-Une écriture avec un ordre atomique `Release` implique qu'aucune
-écriture ou lecture dans le même thread ne peut être réorganiser
-par le processeur. Que l'opération soit atomique ou non-atomique.
-En plus, toute écriture dans une variable devient visible par
-tout les autres threads voulant lire avec un ordre atomique `Acquire`.
+Vous avez peut être remarqué une autre différence avec React qu'implique cette
+implémentation. En utilisant le framework javascript, appeler la méthode
+`dispatch` (celle qui permet de mettre à jour l'état) avec le même objet ne
+redemande pas l'execution de l'application, même si cet objet à été modifié.
+Dans le cas ci-dessus, si on garde la même logique le pointeur pour l'état
+initial ne peut pas être celui des états suivants. Donc la bibliothèque est
+forcé d'accepter tout appel à `dispatch` sans vérifier l'adresse.
 
-Pour résumer simplement, val est comme protégé par un mutex. Cette
-façon d'attendre activement l'accès à une ressource s'appel un spinlock.
-Très utiles dans certains cas, et bien trop gourmant en ressource dans
-d'autre.
+Je recommande tout de même de ne pas utiliser l'état précédent dans la fonction
+de dispatch sans savoir ce qu'on fait. Le mieux serait de pouvoir utiliser une
+variable statique par état. La raison pour laquelle il n'est pas conseillé
+l'état précédent, est qu'il peut être modifié par d'autres parties de
+l'application avant que la fonction de dispatch n'ait été exécutée. Dans ce
+cas, des *data races* peuvent entraîner des bugs difficiles à déboguer.
 
-Sans l'utilisation de lecture et écriture atomique, un programme
-se risquera à un comportement indéfini. Et d'ailleurs en Rust ce
-ne sera pas possible de l'écrire sans l'utilisation de code `unsafe`.
+On a vu précédemment que la file d'états TODO
 
-Les fonctions atomiques permettent aussi de lire et écrire
-simultanement.
+```c
+    while (1)
+    {
+        struct Reagir *re = r();
+        if (NULL == re)
+            break;
+        struct __Entry e = receive_state(re);
+        void *new_state = re->__reducer(re->state, e.arg);
+        opt.on_state_change(&re->state, &new_state);
+    }
+```
 
-## L'état dans lequel je suis est en mémoire
 
-Les états sont par défaut des constantes, statiques.
-Ce choix technique découle du fait qu'en C, on doit
-nettoyer. Je pense que j'aurai fait des choix différent
-si j'avais du coder mon exemple en Javascript ou en
-Bash. Après réflexion, je pense que ce n'est pas une
-mauvaise idée d'imaginer sa machine à état avec des
-états statiques. Mais ce n'ai pas toujours possible
-ou même pratique.
 
-Dans mon exemple, l'état dans lequel je suis est sur le
-tas. C'est à dire que j'ai alloué de la mémoire pour
-lui. Et comme je n'ai pas de runtime en C qui m'aide à
-nettoyer, je dois le faire moi même. C'est pratique, car
-de cette manière je peux vous montrer quelque chose de
-très important: le passage d'un état à un autre.
 
-Par défaut, les états sont des constantes, et changer
-d'état est très simple. Lorsque la machine à état décide
-de dépiler et de passer de A à B. Elle assigne bêtement
-l'état courant à B. Sans nettoyer, ni verifier que A
-est encore utilisé ou non.
+
+
+
+
+
+
+
+
 
 ```c
 static void on_state_change(void **dst, void **src)
@@ -774,31 +832,6 @@ void on_change_with_free(void **dst, void **src)
 }
 ```
 
-## Implementation de Reagir
-
-Au fond, la bibliotheque Reagir ne propose pas grand
-chose. Elle propose d'améliorer notre façon de penser
-une machine à état. L'usage que j'en ai présenté dans
-les paragraphes précédents n'a pas d'importance. Ce qui
-est intéressant, c'est qu'il est facile de décliner la
-logique pour écrire des FSM, des parseurs, en bref, tout
-type de machine à état.
-
-La boucle principale est assez simple. Dès que je reçois
-un nouvel état, provenant d'une file d'attente,
-j'applique la fonction de réduction de ma machine à état.
-
-```c
-    while (1)
-    {
-        struct Reagir *re = r();
-        if (NULL == re)
-            break;
-        struct __Entry e = receive_state(re);
-        void *new_state = re->__reducer(re->state, e.arg);
-        opt.on_state_change(&re->state, &new_state);
-    }
-```
 
 ## Récapitulatif
 
