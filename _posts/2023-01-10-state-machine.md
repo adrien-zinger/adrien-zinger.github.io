@@ -6,7 +6,7 @@ description: ""
 authors: ["Adrien Zinger"]
 scripts: ""
 comments_id: 12
-published: false
+published: true
 ---
 
 <span style="color: #A0A0A0">[2022-12-01] \#Design_pattern \#State_machine \#Code
@@ -34,11 +34,11 @@ références à des générateurs tel que Bison, ou bien au framework React. Vou
 aurez une petite introduction obligatoire aux différentes machines à états
 qu'on trouve dans la nature.
 
-La plupart du temps, j'utilise le langage associé à la construction d'analyseur.
-Pour être plus clair, je me représente une machine à état comme un analyseur.
-Même si un analyseur est un sous-type de machine à état, le langage est suffisement
-consistent pour mon introduction. Je parlerai donc de grammaires, de contextes, de
-conflits, etc.
+La plupart du temps, j'utilise le langage associé à la construction
+d'analyseur. Pour être plus clair, je me représente une machine à état comme un
+analyseur. Même si un analyseur est un sous-type de machine à état, le langage
+est suffisement consistent pour mon introduction. Je parlerai donc de
+grammaires, de contextes, de conflits, etc.
 
 Durant un court épisode, vous verrez comment développer une partie en C et une
 autre en Rust et compiler le tout en un binaire unique. Pour cette partie, il
@@ -51,26 +51,25 @@ séquentielle. Dans le cas où c'est important, je montre comment améliorer les
 performances quand les événements arrivent rapidement. Néanmoins, je ne dis pas
 quand ce cas est effectivement important. Les parties traitant ce sujet offrent
 l'occasion de regarder de plus près des mécanismes utiles dans des programmes
-multithreadés. C'est plus "intéressant" qu'utile, je ne peux pas
-préciser dans quel contexte ces mécanismes sont utilisé dans "la vrai vie" !
-Mais elles existe et sont souvent utilisé pour des raisons parfois
-arbitraires, à cause de croyances personnels, ou bien de connaissance poussé
-du sujet. Ou encore plus simplement, parce que le sous-problème nécessite une
-attention particulière. Il doit être le plus performant possible, donc on essaie
-de multiples méthodes.
+multithreadés. C'est plus "intéressant" qu'utile, je ne peux pas préciser dans
+quel contexte ces mécanismes sont utilisé dans "la vrai vie" ! Mais elles
+existe et sont souvent utilisé pour des raisons parfois arbitraires, à cause de
+croyances personnels, ou bien de connaissance poussé du sujet. Ou encore plus
+simplement, parce que le sous-problème nécessite une attention particulière. Il
+doit être le plus performant possible, donc on essaie de multiples méthodes.
 
 J'aborde donc l'utilisation de structures de données non-bloquantes. Je parle
 en particulier d'opérations atomiques. Je tiens à préciser que ce sujet est
-bien plus complexe que ce qu'il laisse paraître. Changer une structure en
-une autre structure non-bloquante, comme par exemple un table de hashage,
-peut avoir de gros impactes. Parfois, l'espace mémoire que la structure
-prendra sera bien plus grande que l'original. Autrement, il faudra faire des
-concessions sur les performances. A vous de choisir où mettre les priorités.
+bien plus complexe que ce qu'il laisse paraître. Changer une structure en une
+autre structure non-bloquante, comme par exemple un table de hashage, peut
+avoir de gros impactes. Parfois, l'espace mémoire que la structure prendra sera
+bien plus grande que l'original. Autrement, il faudra faire des concessions sur
+les performances. A vous de choisir où mettre les priorités.
 
 J'en profite pour vous prévenir, je suis conscient de maîtriser certaines
-aspects et pas d'autres. Même si j'ai le sentiment d'être dans le vrai, n'hésitez
-pas à me corriger si vous y voyez de grosse erreurs! Et il y en aura probablement,
-même après une centaine de relectures.
+aspects et pas d'autres. Même si j'ai le sentiment d'être dans le vrai,
+n'hésitez pas à me corriger si vous y voyez de grosse erreurs! Et il y en aura
+probablement, même après une centaine de relectures.
 
 
 ## Pourquoi une machine à états ? 
@@ -86,61 +85,48 @@ quand une partie du programme:
 - réagis à différentes entrées et retourne un résultat
   cohérent avec ces entrées.
 
-Plus généralement, lorsqu'une fonction donnent
-une sortie différente après chaque appel. Suivant ces
-description, on remarque que
-les itérateurs et les générateurs sont aussi des genres
-de machines à états.
+Plus généralement, lorsqu'une fonction donnent une sortie différente après
+chaque appel. Suivant ces description, on remarque que les itérateurs et les
+générateurs sont aussi des genres de machines à états.
 
-Il y a différente façon d'aborder le problème.
-La façon scolaire, linéaire que la plupart des raisonements
-humains vont produire. Cette façon de faire pourra entre
-autre ressembler à un analyseur LL ou LR. L'implémentation
-peut être très similaire. Souvent, ces deux méthodes divergent
-uniquement dans les structures qu'elles utilisent.
+Il y a différente façon d'aborder le problème. La façon scolaire, linéaire que
+la plupart des raisonements humains vont produire. Cette façon de faire pourra
+entre autre ressembler à un analyseur LL ou LR. L'implémentation peut être très
+similaire. Souvent, ces deux méthodes divergent uniquement dans les structures
+qu'elles utilisent.
 
-En tout cas, on retrouvera la logique "si j'ai
-tel événement dans tel context, je
-passe à tel état suivant". Au début de mes études je
-codais de nombreuses fonctions qui s'appelaient les unes
-les autres. Elle étaient pleines de conditions et ça
-marchait pas trop mal.
+En tout cas, on retrouvera la logique "si j'ai tel événement dans tel context,
+je passe à tel état suivant". Au début de mes études je codais de nombreuses
+fonctions qui s'appelaient les unes les autres. Elle étaient pleines de
+conditions et ça marchait pas trop mal.
 
-C'est un raisonement très linéaire, et efficace si on
-souhaite développer rapidement un petit morceau de code.
-Mais ça devient vite ingérable dans une application
-qui traversera beaucoup d'états. Idem, si le projet
-change de grammaires, ou s'il s'avère que la grammaire
-commence à contenir des conflits.
+C'est un raisonement très linéaire, et efficace si on souhaite développer
+rapidement un petit morceau de code. Mais ça devient vite ingérable dans une
+application qui traversera beaucoup d'états. Idem, si le projet change de
+grammaires, ou s'il s'avère que la grammaire commence à contenir des conflits.
 
-Depuis longtemp, on élude ces problèmes en utilisant
-un générateur de parseurs (analyseurs). Vous avez peut être déjà
-entendu parler de yacc et lex. Ce genre de générateur existe
-dans de nombreux langages et sous
-de nombreuses formes. Il me semble qu'aujourd'hui leur utilisation
-est moins répandue. Je trouve personnellement que c'est la meilleur
-solution pour générer des machines à état aujourd'hui.
-Se plonger dans une grammaire sous le format BNF,
-même si c'est ennuyant, vous fera gagner une base
-de code propre et un temps considérable.
+Depuis longtemp, on élude ces problèmes en utilisant un générateur de parseurs
+(analyseurs). Vous avez peut être déjà entendu parler de yacc et lex. Ce genre
+de générateur existe dans de nombreux langages et sous de nombreuses formes. Il
+me semble qu'aujourd'hui leur utilisation est moins répandue. Je trouve
+personnellement que c'est la meilleur solution pour générer des machines à état
+aujourd'hui. Se plonger dans une grammaire sous le format BNF, même si c'est
+ennuyant, vous fera gagner une base de code propre et un temps considérable.
 
-Néanmoins, toute méthode a ses avantages et ses inconvégnants.
-Dans certains cas, il sera plus simple d'écrire rapidement un analyseur
-à la main ou en utilisant une bibliothèque tièrce.
+Néanmoins, toute méthode a ses avantages et ses inconvégnants. Dans certains
+cas, il sera plus simple d'écrire rapidement un analyseur à la main ou en
+utilisant une bibliothèque tièrce.
 
-Depuis quelques temps, on développe des analyseurs
-par petits morceaux. Ces combinations de
-parseurs ont des bon côtés. Déjà, on ne dépend
-pas d'un générateur et dans le meilleur des cas, on
-ne dépend pas non plus d'une bibliothèque. Le
-développement est linéaire: je parse, je change d'état.
-Les états sont: des parseurs, des fonctions. Bien sûr,
-on retombe rapidement dans de nombreuses fonctions
-pleines de conditions, maiiiiis c'est pas mal.
+Depuis quelques temps, on développe des analyseurs par petits morceaux. Ces
+combinations de parseurs ont des bon côtés. Déjà, on ne dépend pas d'un
+générateur et dans le meilleur des cas, on ne dépend pas non plus d'une
+bibliothèque. Le développement est linéaire: je parse, je change d'état. Les
+états sont: des parseurs, des fonctions. Bien sûr, on retombe rapidement dans
+de nombreuses fonctions pleines de conditions.
 
-Ensuite il y a la manière React. Attendez, avec
-React on ne fait pas de parseurs, on fait des apps !
-Hé bien si, en faisant du React, on fait des parseurs.
+Ensuite il y a la manière React. Attendez, avec React on ne fait pas de
+parseurs, on fait des apps ! Hé bien si, en faisant du React, on fait des
+parseurs.
 
 ```js
 // thread 1
@@ -156,32 +142,27 @@ function state_machine() {
 }
 ```
 
-Ici je parle de ces `hooks` en React qui permettent
-de recharger des composants avec des valeurs mises à
-jour. Il y a `use_reducer`, qui est généralement
-moins utilisées. Cette méthode permet de créer une
-fonction de mise à jour en donnant pour paramettre
-une methode de _réduction_ avec cette signature:
+Ici je parle de ces `hooks` en React qui permettent de recharger des composants
+avec des valeurs mises à jour. Il y a `use_reducer`, qui est généralement moins
+utilisées. Cette méthode permet de créer une fonction de mise à jour en donnant
+pour paramettre une methode de _réduction_ avec cette signature:
 
 `(current_state, action) => new_state`
 
-Une fonction de réduction permet de créer un nouvel
-état à partir de l'état courant associé à un évenement,
-donc une entrée dans le programme. Pouvoir donner
-cette fonction en argument permet de de centraliser
-un comportement complexe en fonction d'un context.
+Une fonction de réduction permet de créer un nouvel état à partir de l'état
+courant associé à un évenement, donc une entrée dans le programme. Pouvoir
+donner cette fonction en argument permet de de centraliser un comportement
+complexe en fonction d'un context.
 
-On trouve aussi `use_state`, qui se limite à prendre pour
-argument un état initial. Cependant, il produit la même
-chose que son compagnon. A la différence qu'il utilise
-sa propre fonction de réduction où l'action est le
-le nouvel état.
+On trouve aussi `use_state`, qui se limite à prendre pour argument un état
+initial. Cependant, il produit la même chose que son compagnon. A la différence
+qu'il utilise sa propre fonction de réduction où l'action est le le nouvel
+état.
 
-Le fonctionnement de ma machine à états est alors décrite par
-des structures génériques dans une queue et une fonction
-de transition si elle est définie. A terme, ce modèle
-pourrait ressembler trait pour trait à des combinations
-de parseurs.
+Le fonctionnement de ma machine à états est alors décrite par des structures
+génériques dans une queue et une fonction de transition si elle est définie. A
+terme, ce modèle pourrait ressembler trait pour trait à des combinations de
+parseurs.
 
 ```js
 function onStateChange(state) {
@@ -199,38 +180,32 @@ function onStateChange(state) {
 
 ## Usage d'une machine à état
 
-Une machine à état est très flexible et s'adapte en
-fonction du besoin. En effet, plus haut je vous disais
-qu'un itérateur, un générateur ou encore un parseur
-son des types de machines à états. Parfois un simple
-appel à un timeout peut cacher une machine à état,
-"en cours -> annulé", "ouvert -> fermé".
+Une machine à état est très flexible et s'adapte en fonction du besoin. En
+effet, plus haut je vous disais qu'un itérateur, un générateur ou encore un
+parseur son des types de machines à états. Parfois un simple appel à un timeout
+peut cacher une machine à état, "en cours -> annulé", "ouvert -> fermé".
 
-Mais parmis tous, le parseur est un cas particulier.
-Le parseur suppose une fin à ces états. Que le
-programme soit écrit à l'aide d'un générateur ou avec
-la méthode des combinations, on attend des états
-qu'ils se résolvent.
+Mais parmis tous, le parseur est un cas particulier. Le parseur suppose une fin
+à ces états. Que le programme soit écrit à l'aide d'un générateur ou avec la
+méthode des combinations, on attend des états qu'ils se résolvent.
 
-Une dernière méthode permettant de créer des machines
-à état, est celle de React. Avec cette méthode, on
-peut écrire des itérateurs, des parseurs, toutes
-les machines à états finies et infinies. C'est pour
-cette raison qu'elle est extrèmement éfficace pour
-la gestion d'une application.
+Une dernière méthode permettant de créer des machines à état, est celle de
+React. Avec cette méthode, on peut écrire des itérateurs, des parseurs, toutes
+les machines à états finies et infinies. C'est pour cette raison qu'elle est
+extrèmement éfficace pour la gestion d'une application.
 
-Faire avancer les états avec React se résume à empiler
-des évenements et les traiter un par un. Pour pousser
-la démonstration, je vais écrire un petit exemple en C.
+Faire avancer les états avec React se résume à empiler des évenements et les
+traiter un par un. Pour pousser la démonstration, je vais écrire un petit
+exemple en C.
 
 ## Développement de Reagir
 
-Les morceaux de codes qui suivront seront des éléments
-d'un programme simplet, un echo avec une implémentation
-volontairement complexe. Surtout, ne refaite pas ça chez
-vous.
+Les morceaux de codes qui suivront sont des exemples d'utilisation d'une
+bibliothèque créé pour l'article. Le sujet de l'expérience ici sera un
+programme simpliste. Il implémente un echo volontairement complexe (à ne pas
+refaire pas ça chez soit).
 
-Voici le comportement attendu:
+Voici le comportement attendu du programme:
 
 1. la sortie standart affichera `waiting for an entry`.
 2. `you wrote: ${entrée}` suivit de `Can you write something else?`.
@@ -239,12 +214,11 @@ Voici le comportement attendu:
 
 Le programme devra s'arrêter à la lecture du mot clef _"exit"_.
 
-Je commence par créer une structure représentant
-un état, auquel est associé une méthode liée dynamiquement
-appliquant une étape de ma machine à état. Pendant la
-modification de l'état, le programme continue à agir
-tant que je lui ai pas dit de se mettre à jour. Un peu
-comme avec la fonction de mise à jour `setState` en React.
+Je commence par créer une structure représentant un état, auquel est associé
+une méthode liée dynamiquement appliquant une étape de ma machine à état.
+Pendant la modification de l'état, le programme continue à agir tant que je lui
+ai pas dit de se mettre à jour. Un peu comme avec la fonction de mise à jour
+`setState` en React.
 
 ```c
 void step_n(struct State *self)
@@ -268,24 +242,20 @@ void step_1(struct State *self)
 }
 ```
 
-Dans la figure précédente, plusieurs ligne modifie la
-valeur de l'état. Dans mon cas, ces valeurs sont modifiées
-en prévision de _l'itération suivante_ de mon programme.
-Autrement dit, je construit par dessus mon état actuel
-l'état suivant.
+Dans la figure précédente, plusieurs ligne modifie la valeur de l'état. Dans
+mon cas, ces valeurs sont modifiées en prévision de _l'itération suivante_ de
+mon programme. Autrement dit, je construit par dessus mon état actuel l'état
+suivant.
 
-A noté que dans certains cas, cette façon de faire peut
-poser problème. Notemment si le programme accède à cette
-valeur via plusieurs thread. Parmis les problèmes qu'on
-rencontre dans ce cas là, le fait de rendre l'état actuel
-immutable devient capital. Pas de problèmes, ne touchez pas
-à l'état courant, construisez en un nouveau et entourez le
-de mutex.
+A noté que dans certains cas, cette façon de faire peut poser problème.
+Notemment si le programme accède à cette valeur via plusieurs thread. Parmis
+les problèmes qu'on rencontre dans ce cas là, le fait de rendre l'état actuel
+immutable devient capital. Pas de problèmes, ne touchez pas à l'état courant,
+construisez en un nouveau et entourez le de mutex.
 
-J'ai évoqué plus haut le terme d'itération. En quelques mots,
-le coeur de mon programme est une boucle infinie, qui à chaque
-nouvel mise à jour de mon état, executera la même fonction.
-Le coeur ne change pas, l'état change.
+J'ai évoqué plus haut le terme d'itération. En quelques mots, le coeur de mon
+programme est une boucle infinie, qui à chaque nouvel mise à jour de mon état,
+executera la même fonction. Le coeur ne change pas, l'état change.
 
 ```c
 int state_machine()
@@ -306,29 +276,22 @@ int state_machine()
 }
 ```
 
-Voici comment une machine à état infinie peut
-fonctionner. L'absurde complexité du mini projet
-montre néanmoins comment on peut se défaire d'une
-série de conditions et d'intrications de monades.
-Par exemple, l'optimisation de la fonction before
-qui en premier lieu retourne forcément 0. N'ayant
-aucune entrée à lire, celà montre bien comment
-éviter des tests inutiles, dans un projet plus
-important.
+Voici comment une machine à état infinie peut fonctionner. L'absurde complexité
+du mini projet montre comment on peut se défaire d'une série de conditions et
+d'intrications de monades. Par exemple, l'optimisation de la fonction before
+qui en premier lieu retourne forcément 0. N'ayant aucune entrée à lire, celà
+montre bien comment éviter des tests inutiles, dans un projet plus important.
 
 # File d'états, file d'actions
 
-Je n'ai pas encore parlé d'une partie importante
-de l'exemple précédent. La lecture de l'entrée
-utilisateur. C'est à cet endroit que j'appelle
-la méthode `dispatch` associée à ma machine à état.
+Je n'ai pas encore parlé d'une partie importante de l'exemple précédent. La
+lecture de l'entrée utilisateur. C'est à cet endroit que j'appelle la méthode
+`dispatch` associée à ma machine à état.
 
-Cette méthode ajoute dans une file un nouvel objet,
-qui selon la configuration, appelera une fonction
-de réduction, ou mettra à jour l'état actuel. La
-configuration ce faisant si l'on créer l'état grâce
-à `use_state` ou `use_reducer`, exactement comme en
-React !
+Cette méthode ajoute dans une file un nouvel objet, qui selon la configuration,
+appelera une fonction de réduction, ou mettra à jour l'état actuel. La
+configuration ce faisant si l'on créer l'état grâce à `use_state` ou
+`use_reducer`, exactement comme en React !
 
 ```c
 void *scan(void *_re)
@@ -341,29 +304,25 @@ void *scan(void *_re)
 }
 ```
 
-Je vous ai prévenu, ce modèle de machine à états
-enfile des objets afin de les traiter de façon
-synchrones. Mais rien n'empêche l'accumulation des
-événements d'être asynchrone ou parrallèle. Alors
-on peut se poser quelques questions sur la résistance
-du modèle face au parrallèlisme.
+Je vous ai prévenu, ce modèle de machine à états enfile des objets afin de les
+traiter de façon synchrones. Mais rien n'empêche l'accumulation des événements
+d'être asynchrone ou parrallèle. Alors on peut se poser quelques questions sur
+la résistance du modèle face au parrallèlisme.
 
-Ici, j'ai de la chance pour plusieurs raison. La première,
-_scanf_ en C a une implémentation telle que même si plusieurs
-thread écoutaient en même temps, seulement un d'entre eux
-pourrait réagir à une entrée. Je reviendrai sur la seconde
-raison plus tard. Pour l'instant immaginons que le programme écoute
-plusieurs entrées différentes, des appels réseau ou
-des notifications de l'OS. L'enfilement et le défilement peuvent
-être concurents et poser problème. Mais c'est sans compter sur
-la connaissance des patrons de producteurs - consommateurs.
+Ici, j'ai de la chance pour plusieurs raison. La première, _scanf_ en C a une
+implémentation telle que même si plusieurs thread écoutaient en même temps,
+seulement un d'entre eux pourrait réagir à une entrée. Je reviendrai sur la
+seconde raison plus tard. Pour l'instant immaginons que le programme écoute
+plusieurs entrées différentes, des appels réseau ou des notifications de l'OS.
+L'enfilement et le défilement peuvent être concurents et poser problème. Mais
+c'est sans compter sur la connaissance des patrons de producteurs -
+consommateurs.
 
-Depuis même avant ma naissance, on sait gérer les
-notifications concurente sur plusieurs threads grâce à ce genre
-de solutions. Et depuis les anneés 90, il y a eu de nombreuses
-implémentations et approches différente. Celle qui
-est implémentée dans ma bibliothèque n'est pas
-la plus efficace. Par contre, elle est facile à comprendre.
+Depuis même avant ma naissance, on sait gérer les notifications concurente sur
+plusieurs threads grâce à ce genre de solutions. Et depuis les anneés 90, il y
+a eu de nombreuses implémentations et approches différente. Celle qui est
+implémentée dans ma bibliothèque n'est pas la plus efficace. Par contre, elle
+est facile à comprendre.
 
 ```c
 static void send_state(struct Entry e)
@@ -391,25 +350,37 @@ static struct Entry receive_state(struct Reagir *re)
     pthread_mutex_unlock(&re->mutex);                    // R8
     return e;
 }
+
+void dispatch(struct Reaction *rea, void *arg)
+{
+    struct Entry e = {(struct PrivReaction *)rea, arg};
+    send_state(e);
+}
 ```
 
-Un appel à `dispatch` créer une nouvelle entrée. Cette fois-ci, l'en trée est
+Un appel à `dispatch` créé une nouvelle entrée. Cette fois-ci, l'entrée est
 une information qui serait traitée par la bibliothèque afin de passer d'un état
 à un autre. Tant que la bibliothèque peut faire défiler ces entrées, on avance
 dans la machine à états. On ne s'attend pas spécialement à un état final,
-simplement à continuer d'avancer.
+simplement à continuer d'avancer. La fonction `dispatch` prend en argument la
+structure `Reaction` qui représente la machine à état qu'on souhaite altérer
+ainsi qu'un argument. Ce `arg` est l'argument de la fonction de réduction. Il
+peut être un nouvel état, si on a utilisé `use_state`, ou une action, si on a
+utilisé `use_reducer`. En fin de compte, la file d'attente contient des
+fonctions de réduction qui seront appelées séquenciellement.
+
 
 Prenons un peu le temps de lire l'algorithme de la figure précédente. On
-remarque que ce code contient plusieurs locks. Un lock coûte au processeur. En
-tout cas c'est ce que j'ai appris. D'ici quelques années, j'aurai peut être
-tort de dire ça, mais si possible, aujourd'hui il est préférable d'éviter
-d'invoquer un lock du procésseur.
+remarque que ce code contient plusieurs locks. Un lock coûte du temps au
+processeur. En tout cas c'est ce que j'ai appris. D'ici quelques années,
+j'aurai peut être tort de dire ça, mais si possible, aujourd'hui il est
+préférable d'éviter d'invoquer un lock du procésseur.
 
 Cette implémentation est peut être suffisante pour mon exemple ? Je n'ai pas
 besoin de code particulièrement rapide. Mais je peux encore aller plus loin. Je
 pourrais par exemple retirer complètement les locks.
 
-L'utilisation que je fais de ma machine à état dans mon exemple est synchrone!
+L'utilisation que je fais de ma machine à état dans mon exemple *est synchrone* !
 Même si j'utilise deux threads différents. Je ne lis pas d'entrée utilisateur
 pendant l'execution de la boucle de la machine à états, ou même avant. A aucun
 moment, je peux envoyer un évennement ET en recevoir simultanement. Les lignes
@@ -417,24 +388,24 @@ S2, S9 R1 et R8 sont donc inutiles dans mon cas.
 
 Même si mon programme communiquait avec d'autres, s'assuré d'un ping pong où
 chaque instance attend la réponse de l'autre peut être résolu sans aucun appel
-à lock, autre que par l'invocation de `wait`.
+de `lock/unlock`, autre que par l'invocation de `wait`. Tant qu'on peut
+considérer que l'ensemble du système fonctionne sur un unique thread en
+aditionnant les executions concurrentes, on peut se passer des vérous. 
 
 Attention, le fait d'avoir une utilisation synchrone de cette file est l'unique
-justification valable pour retirer les `lock`. Des appels concurrents auraient
+justification valable pour retirer les vérous. Des appels parrallèles auraient
 des résultats imprévisibles ! Par mesure de sécurité, il faut toujours entourer
-les variables conditionnelles par des `lock`. Prenez ça comme une rêgle d'or.
+les variables conditionnelles par des vérous. Prenez ça comme une rêgle d'or.
 
 Dans notre cas, on retire quelques utilisations de mutex et ça marche.
 Cependant, si on souhaite quelque chose de plus puissant qui nous autorise
 toujours des lectures et écritures parrallèles, il faut se tourner vers des
-structures plus efficaces.
-
-Dans un contexte où on recevrait beaucoup d'évenements, une structure de donnée
-non bloquante pourrait être intéressante. Il y a un grand nombre
-d'implémentation possible, à commencer par utiliser deux mutex différents pour
-la tête de file et le bout de file. Les producteurs se partageraient un mutex
-et le consommateur sera plus rapide pour lire, aillant le monopole sur le
-defilement.
+structures plus efficaces. Dans un contexte où on receverait beaucoup
+d'évenements, une structure de données non bloquante pourrait être intéressante.
+Il y a un grand nombre d'implémentation possible, à commencer par utiliser deux
+mutex différents pour la tête de file et le bout de file. Les producteurs se
+partageraient un mutex et le consommateur sera plus rapide pour lire, aillant
+le monopole sur le defilement.
 
 Plus rapide encore, une version de la file de Mickael-Scott propose une
 solution n'utilisant aucun mutex. L'algorithme tire avantage des fonctions
@@ -480,7 +451,7 @@ moins, certaines contraintes.
 
 Une variable peut être atomique dans le cas où elle est assez petite. Elle est
 généralement une version d'un type primitif. On peut lui donner des
-ordonnacement d'accès en lecture et ecriture de manière à ce que différents
+ordonnacements d'accès en lecture et ecriture de manière à ce que différents
 threads ne tombent pas dans des *data races*. Et dans tout les cas, il est
 préférable, si on utilise ces variables, de donner l'ordonnancement `SeqCst`
 qui est la contrainte la plus élevée.
@@ -733,64 +704,89 @@ l'état précédent, est qu'il peut être modifié par d'autres parties de
 l'application avant que la fonction de dispatch n'ait été exécutée. Dans ce
 cas, des *data races* peuvent entraîner des bugs difficiles à déboguer.
 
-On a vu précédemment que la file d'états TODO
+Quelques chapitres au dessus, on a vu comment des fonctions de réduction sont
+enfilées. J'ai précisé ensuite que ces fonctions sont exécutées séquenciellement
+et l'impacte qu'elles ont.
 
 ```c
-    while (1)
+    while (1)                                               // L1
     {
-        struct Reagir *re = r();
-        if (NULL == re)
-            break;
-        struct __Entry e = receive_state(re);
-        void *new_state = re->__reducer(re->state, e.arg);
-        opt.on_state_change(&re->state, &new_state);
+        struct Reagir *re = r();                            // L2
+        if (NULL == re)                                     // L3
+            break;                                          // L4
+        struct __Entry e = receive_state(re);               // L5
+        void *new_state = re->__reducer(re->state, e.arg);  // L6
+        opt.on_state_change(&re->state, &new_state);        // L7, re->state devient new_state
     }
 ```
 
+Dans l'implémentation de la boucle d'exécution, il n'y a aucun néttoyage des
+état. Dans un langage qui n'est pas *garbage collecté*, c'est un peu
+problématique. À la place, la bibliothèque appelle une fonction paramettrable, qui permet
+pour nous de résoudre plusieurs problème.
 
-
-
-
-
-
-
-
-
-
-
+Première question : que se passe-t-il si je souhaite utiliser des états de ma
+*heap* ? Si c'est le cas, il faut trouver un moment juste où on possède encore le pointeur
+de l'état précédent afin de libérer l'espace mémoire. Une des possibilité qui n'embête pas
+trop l'utilisateur de la bibliothèque est celle-ci: `on_state_change` s'occupe de néttoyer.
+C'est simple et efficace, à la création de la machine à état, on donne en paramêtre une
+fonction.
 
 ```c
-static void on_state_change(void **dst, void **src)
+void on_change_with_free(void **dst, void **src)
 {
+    free(*dst);
     *dst = *src;
+}
+
+void main(void)
+{
+    struct Opt opt = {on_change_with_free};
+    create(state_machine, &opt);
 }
 ```
 
-Si je commence à écouter des entrées asynchrones, je
-développe un serveur qui reçoit ses commandes via tcp.
-Plusieurs thread, au moins deux, peuvent utiliser mon
-état à tout moment de mon execution. C'est le prix que
-j'ai à payer pour quelque chose d'efficace. Dans ce cas,
-mon petit bout de code est **très très critique**.
+La proposition précédente fonctionne parfaitement dans un contexte synhrone. Si
+plusieurs thread pouvaient utiliser les états à tout moment de l'execution,
+dans ce cas, ce bout de code est **très très critique** ! Pourtant, il existe
+des situations où les executions seront toujours concurrentes, jamais
+parrallèle, et ce code marche.
 
-Immaginons que pendant que je reçoivent une nouvelle
-information la machine à état passe de l'état A à B.
-Je me pose la question, si un autre thread
-viens juste de modifier A, comment je fais pour
-savoir si j'ai perdu une information ? Peut être que
-mon état n'a plus de raison d'être ! J'aurai du passer
-à l'état C.
+Deuxième question : immaginons que pendant que je reçoivent une nouvelle
+information la machine à état passe de l'état A à A'. Le programme a passé `L6`
+(voir la figure de la boucle) et est en train d'executer la fonction de
+réduction. Si un autre thread modifie A à ce moment là, la fonction de
+réduction aura et cet autre thread auront un `data race`. Comment peut-on
+empêcher ça ?
 
-L'exemple suivant montre une façon simple de proteger
-mon état contre des accès simultanés. Evidemment,
-chaque cas à sa spécificité. Pour mon exemple je
-n'en ai pas besoin.
+La première réponse, la moins évidente à réaliser, est de faire en sorte que
+le programme soit résilient. L'utilisation de structures non-bloquante encore
+permet d'éviter des `data races` compliqué. La fonction de réduction, pourrait
+par remplacer l'ancien état avec un `compare_and_swap` plus éllaboré, et tenter
+de nouveau tant que l'opération échoue. Dans ce cas, il faut aussi se protéger
+contre des libérations de mémoire inattendues. L'accès à une structure, aussi
+atomique soit-elle, ne protège pas contre l'apparition d'un pointeur NULL comme
+référence.
+
+Une manière plus simple de se protéger est, evidement, l'utilisation de vérous.
+En combinant une fonction de réduction qui enclenche un vérou et la fonction de
+nettoyage pour le déclencher, on peut réussir à protéger l'état contre des
+comportements indéfinis. Le vérou peut être contenu dans la machine à état.
+Mais de toute manière, il n'y a toujours qu'un état courrant, donc
+l'utilisation d'un vérou global est largement suffisant.
 
 ```c
 void *locker(void *_, void *new_state)
 {
     lock(&state_mutex);
     return new_state;
+}
+
+void my_on_state_change(void **dst, void **src)
+{
+    free(*dst); // dans le cas où j'utilise la heap.
+    *dst = *src;
+    unlock(&state_mutex);
 }
 
 struct Reagir* state_machine()
@@ -801,58 +797,37 @@ struct Reagir* state_machine()
     );
     return re;
 }
-
-void my_on_state_change(void **dst, void **src)
-{
-    *dst = *src;
-    unlock(&state_mutex);
-}
-
-void main()
-{
-    struct ReagirOpt opt;
-    opt.on_state_change = my_on_state_change;
-    create(state_machine, opt);
-}
 ```
 
-Dans mon cas, je souhaite allouer des états au lieu
-d'utiliser des variables statiques ou des constantes,
-c'est une source de fuite mémoire. Je peux nettoyer
-au fur et à mesure en conservant un pointeur vers l'état
-précédent, mais ce n'est pas si simple. Je peux nettoyer
-parrallèlement, avec un methode de garbage collection.
-Ou bien je redefinis cette fonction.
+## Une file plus rapide
 
-```c
-void on_change_with_free(void **dst, void **src)
-{
-    free(*dst);
-    *dst = *src;
-}
-```
+TODO - présenter la file de Mickael-Scott. Lock-free qui contient des mutex.
+TODO - Problème de spin CPU et ajout de vérous bien placés.
 
+Admettons que la situation nous impose d'optimiser la lecture et l'écriture de
+la file d'attente. Effectivement, la structure *mpsc* (multiple producer single
+consumer) implique un goulot d'étranglement. Admettons qu'utiliser un simple
+vérou sur la file de la machine à état n'est pas suffise pas, utiliser des
+*mutex* coûte au CPU un temps précieux. Alors que fait-on ?
+
+Premièrement, on peut commencer par regarder comment on utilise les files simples.
 
 ## Récapitulatif
 
-En lisant divers articles durant mes recherches, je n'ai pas pu
-m'empêcher de faire le lien avec ce que Pierre Boule a si bien
-décrit dans son oeuvre _La planette des singes_. J'ai eu l'impression
-que les thèses écrites entre les années 1990 et 2010 ont eues un
-impacte important. Elles déteingnent nettement sur les articles
-techniques jusqu'en 2022. Et si elles n'en sont pas la source
-d'inspiration, d'autres articles répètent encore et encore les
-même choses.
+En lisant divers articles durant mes recherches, je n'ai pas pu m'empêcher de
+faire le lien avec ce que Pierre Boule a si bien décrit dans son oeuvre _La
+planette des singes_. J'ai eu l'impression que les thèses écrites entre les
+années 1990 et 2010 ont eues un impacte important. Elles déteingnent nettement
+sur les articles techniques jusqu'en 2022. Et si elles n'en sont pas la source
+d'inspiration, d'autres articles répètent encore et encore les même choses.
 
-Toujours avec une légère différence dû à la personnalité
-de l'écrivain, les postes autours des sujets qui suivent sont
-des immitations les unes des autres. Parfois, simplement, un
-développeur curieux découvre, comme moi, comment fonctionnent
-des outils qu'il utilise depuis une décénie. Je suis un bucheron
-qui comprend comment marche une hache. J'espère que ça n'en
-reste pas moins utile, qu'une forme de vulgarisation est parfois
-nécessaire. En revanche, je ne voudrais pas me limiter à imiter
-mes pères. Je souhaite tenter de combiner des connaissances
-et m'essayer à la créativité. Bien que ma créativité n'aura
-rien de novatrice et sera déjà venu à l'esprit des premiers
-informaticiens, je serai plus heureux comme ça.
+Toujours avec une légère différence dû à la personnalité de l'écrivain, les
+postes autours des sujets qui suivent sont des immitations les unes des autres.
+Parfois, simplement, un développeur curieux découvre, comme moi, comment
+fonctionnent des outils qu'il utilise depuis une décénie. Je suis un bucheron
+qui comprend comment marche une hache. J'espère que ça n'en reste pas moins
+utile, qu'une forme de vulgarisation est parfois nécessaire. En revanche, je ne
+voudrais pas me limiter à imiter mes pères. Je souhaite tenter de combiner des
+connaissances et m'essayer à la créativité. Bien que ma créativité n'aura rien
+de novatrice et sera déjà venu à l'esprit des premiers informaticiens, je serai
+plus heureux comme ça.
