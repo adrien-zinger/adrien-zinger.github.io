@@ -11,6 +11,8 @@ published: true
 
 <span style="color: #A0A0A0">[2022-12-01] \#Design_pattern \#State_machine \#Code
 
+## Introduction
+
 Cet article est un patchwork de problèmes qui me sont venus à l'esprit ces
 derniers mois. La suite peut vous sembler être un puzzle sans solution que
 j'essaie de construire. Malgré le fil conducteur, cet article ressemble
@@ -30,41 +32,41 @@ Si j'échoue à faire comprendre pour quelles raisons on peut souhaiter avoir un
 programme tel quel, cet article pourrait être intéressant au moins pour les
 sujets variés qu'il aborde. Il montre ce qu'on attend d'une machine à états et
 les différentes techniques pour en produire. Vous y trouverez donc des
-références à des générateurs tel que Bison, ou bien au framework React. Vous
+références à des générateurs tels que Bison, ou bien au framework React. Vous
 aurez une petite introduction obligatoire aux différentes machines à états
 qu'on trouve dans la nature.
 
-La plupart du temps, j'utilise le langage associé à la construction
-d'analyseur. Pour être plus clair, je me représente une machine à état comme un
-analyseur. Même si un analyseur est un sous-type de machine à état, le langage
-est suffisement consistent pour mon introduction. Je parlerai donc de
-grammaires, de contextes, de conflits, etc.
+Dans ce document, j'utiliserai le même langage que celui qu'on utilise pour
+parler de parseurs. Pour être plus clair, je me représente une machine à état
+comme un analyseur. Même si un analyseur est un sous-type de machine à état, le
+langage est suffisant pour mon introduction. Je parlerai donc de grammaires, de
+contextes, de conflits, etc.
 
-Durant un court épisode, vous verrez comment développer une partie en C et une
-autre en Rust et compiler le tout en un binaire unique. Pour cette partie, il
-faudra des compétences en Rust que je ne peux pas vous offrir en si peu de
-text. Les détails importants seront tout de même bien expliqués.
+Quelque exemple en C et en Rust accompagnerons mon propos. Le code complet est
+disponible en annexe. Je vous recommande de ne pas trop vous y attarder, je
+considère qu'il n'y a pas de réponse parfaite et encore moins une unique
+implémentation.
 
-Une grande partie sera consacrée à la file d'événements qui peuvent modifier
-une machine à état. Cette file d'événement doit être traitée de façon
-séquentielle. Dans le cas où c'est important, je montre comment améliorer les
-performances quand les événements arrivent rapidement. Néanmoins, je ne dis pas
-quand ce cas est effectivement important. Les parties traitant ce sujet offrent
-l'occasion de regarder de plus près des mécanismes utiles dans des programmes
-multithreadés. C'est plus "intéressant" qu'utile, je ne peux pas préciser dans
-quel contexte ces mécanismes sont utilisé dans "la vrai vie" ! Mais elles
-existe et sont souvent utilisé pour des raisons parfois arbitraires, à cause de
-croyances personnels, ou bien de connaissance poussé du sujet. Ou encore plus
-simplement, parce que le sous-problème nécessite une attention particulière. Il
-doit être le plus performant possible, donc on essaie de multiples méthodes.
+Une grande partie sera consacrée à la file d'événements qui modifie une machine
+à état. Cette file d'événement doit être traitée de façon séquentielle. Quand
+les événements arrivent rapidement, je montre comment améliorer les
+performances. Néanmoins, je ne dis pas qu'il est effectivement important de se
+soucier à ce point des performances d'une machine à états. Les parties traitant
+ce sujet offrent l'occasion de regarder de plus près des mécanismes utilisés
+dans des programmes multithreadés. C'est plus intéressant qu'utile. Je ne peux
+pas dire dans quel contexte ces mécanismes sont utilisés dans la vie. Mais ils
+existent et sont utilisés, pour des raisons parfois arbitraires, à cause  de
+croyances personnels, ou bien avec de bonnes raisons, avec des connaissances
+poussées du sujet. Ou plus simplement, parce que le sous problème nécessite une
+attention particulière. Il doit être le plus performant possible, donc on
+essaie plusieurs méthodes.
 
 J'aborde donc l'utilisation de structures de données non-bloquantes. Je parle
 en particulier d'opérations atomiques. Je tiens à préciser que ce sujet est
 bien plus complexe que ce qu'il laisse paraître. Changer une structure en une
-autre structure non-bloquante, comme par exemple un table de hashage, peut
-avoir de gros impactes. Parfois, l'espace mémoire que la structure prendra sera
-bien plus grande que l'original. Autrement, il faudra faire des concessions sur
-les performances. A vous de choisir où mettre les priorités.
+autre structure non-bloquante peut avoir de gros impactes. Parfois, l'espace
+mémoire que la structure prendra sera bien plus grande que l'original.
+Autrement, il faudra faire des concessions sur les performances.
 
 J'en profite pour vous prévenir, je suis conscient de maîtriser certaines
 aspects et pas d'autres. Même si j'ai le sentiment d'être dans le vrai,
@@ -113,9 +115,9 @@ personnellement que c'est la meilleur solution pour générer des machines à é
 aujourd'hui. Se plonger dans une grammaire sous le format BNF, même si c'est
 ennuyant, vous fera gagner une base de code propre et un temps considérable.
 
-Néanmoins, toute méthode a ses avantages et ses inconvégnants. Dans certains
-cas, il sera plus simple d'écrire rapidement un analyseur à la main ou en
-utilisant une bibliothèque tièrce.
+Toute méthode a ses avantages et ses inconvégnants. Dans certains cas, il sera
+plus simple d'écrire rapidement un analyseur à la main ou en utilisant une
+bibliothèque tièrce.
 
 Depuis quelques temps, on développe des analyseurs par petits morceaux. Ces
 combinations de parseurs ont des bon côtés. Déjà, on ne dépend pas d'un
@@ -366,7 +368,7 @@ simplement à continuer d'avancer. La fonction `dispatch` prend en argument la
 structure `Reaction` qui représente la machine à état qu'on souhaite altérer
 ainsi qu'un argument. Ce `arg` est l'argument de la fonction de réduction. Il
 peut être un nouvel état, si on a utilisé `use_state`, ou une action, si on a
-utilisé `use_reducer`. En fin de compte, la file d'attente contient des
+utilisé `use_reducer`. En fin de compte, la file contient des
 fonctions de réduction qui seront appelées séquenciellement.
 
 
@@ -380,7 +382,7 @@ Cette implémentation est peut être suffisante pour mon exemple ? Je n'ai pas
 besoin de code particulièrement rapide. Mais je peux encore aller plus loin. Je
 pourrais par exemple retirer complètement les locks.
 
-L'utilisation que je fais de ma machine à état dans mon exemple *est synchrone* !
+L'utilisation que je fais de ma machine à état dans mon exemple _est synchrone_ !
 Même si j'utilise deux threads différents. Je ne lis pas d'entrée utilisateur
 pendant l'execution de la boucle de la machine à états, ou même avant. A aucun
 moment, je peux envoyer un évennement ET en recevoir simultanement. Les lignes
@@ -439,7 +441,7 @@ utiliser des instructions tel que `dmb` pour préciser un ordre
 *ACQUIRE-RELEASE*. L'instruction `dmb` (data memory barrier) garantit que
 toutes les instructions de lecture ou écriture en mémoire exécutées avant elle
 sont terminées avant que celles exécutées après ne le soient. Il convient donc
-de dire, en écrivant du code plus haut niveau, comme du *Rust* ou du *C*, que
+de dire, en écrivant du code plus haut niveau, comme du _Rust_ ou du _C_, que
 toute les opérations sont "non-atomique" tant que le code ne précise rien.
 
 Le processeur, pour plusieurs raisons, a le droit de superposer des opérations
@@ -709,16 +711,17 @@ enfilées. J'ai précisé ensuite que ces fonctions sont exécutées séquenciel
 et l'impacte qu'elles ont.
 
 ```c
-    while (1)                                               // L1
-    {
-        struct Reagir *re = r();                            // L2
-        if (NULL == re)                                     // L3
-            break;                                          // L4
-        struct __Entry e = receive_state(re);               // L5
-        void *new_state = re->__reducer(re->state, e.arg);  // L6
-        opt.on_state_change(&re->state, &new_state);        // L7, re->state devient new_state
-    }
+struct Reagir *re = new_reagir(pthread_self());
+
+while (state_machine())
+{
+    re->i = 0;
+    struct Entry e = receive_state(re);
+    void *new_state = e.rea->reducer(e.rea->pub.state, e.arg);  // L7
+    opt.on_state_change(&e.rea->pub.state, &new_state);         // L8
+}
 ```
+
 
 Dans l'implémentation de la boucle d'exécution, il n'y a aucun néttoyage des
 état. Dans un langage qui n'est pas *garbage collecté*, c'est un peu
@@ -753,7 +756,7 @@ des situations où les executions seront toujours concurrentes, jamais
 parrallèle, et ce code marche.
 
 Deuxième question : immaginons que pendant que je reçoivent une nouvelle
-information la machine à état passe de l'état A à A'. Le programme a passé `L6`
+information la machine à état passe de l'état A à A'. Le programme a passé `L7`
 (voir la figure de la boucle) et est en train d'executer la fonction de
 réduction. Si un autre thread modifie A à ce moment là, la fonction de
 réduction aura et cet autre thread auront un `data race`. Comment peut-on
@@ -805,12 +808,54 @@ TODO - présenter la file de Mickael-Scott. Lock-free qui contient des mutex.
 TODO - Problème de spin CPU et ajout de vérous bien placés.
 
 Admettons que la situation nous impose d'optimiser la lecture et l'écriture de
-la file d'attente. Effectivement, la structure *mpsc* (multiple producer single
+la file. Effectivement, la structure *mpsc* (multiple producer single
 consumer) implique un goulot d'étranglement. Admettons qu'utiliser un simple
 vérou sur la file de la machine à état n'est pas suffise pas, utiliser des
 *mutex* coûte au CPU un temps précieux. Alors que fait-on ?
 
-Premièrement, on peut commencer par regarder comment on utilise les files simples.
+Une file est une structure de donnée qui en théorie n'a pas de taille précise
+et qui implémente au moins deux fonctions: `pop` et `push` (defiler et enfiler)
+et dont les éléments qui entrent et sortent respectent l'ordre *FIFO*. Avant de
+commencer à présenter différentes façons d'optimiser cette structure, regardons
+ce que font ces deux routines.
+
+*Push*, par exemple va:
+1. Créer un nouveau noeud.
+2. Trouver la fin de la file.
+3. Relier la fin de la file avec le nouveau noeud.
+4. Modifier le pointeur de fin de file vers le nouveau noeud.
+
+*Pop*:
+1. Trouver la tête de la file.
+2. Trouver l'element suivant.
+3. Echanger le pointeur de en tête de file avec l'élément suivant.
+4. Supprimer l'ancien noeud.
+
+Initiallement les pointeurs de tête et de fin sont initialisé à null. On les
+appellera des `dummies`, ils serviront essentiellement à combler le début et
+la fin de la file et peuvent être égaux. Plus important, il faut souligner le
+fait que la plupart de ces opérations sont invalides dans un contexte de
+partage de données entre plusieurs threads parallèles.
+
+
+// todo shema
+
+La figure ci-dessus montre un des nombreux scénari de désynchronisation qui
+pourrait arriver. En fait, en utilisant cette structure non protégée, ça ne se
+passera jamais bien. Si on reste dans des executions concurrentes, dans des
+*green threads*, pourquoi pas. Mais en incluant du parallélisme, il y a un fort
+risque de perte de données et de comportements indéfinis. Dans ce cas, la
+solution la plus évidente est d'ajouter un mutex autour de la file partagée.
+Des solutions plus performantes entrent alors en scène.
+
+L'étape suivante d'une structure de donnée *thread-safe*, après le grand mutex,
+c'est le status *lock-free*. Dans le jargon, *lock-free* implique que l'appel
+d'une routine comme *Push* garantis que les appels parrallèls à cette même
+routine pourront se terminer pendant l'execution. Autrement dit, on arrive à
+s'organiser entre thread de façon à se partager la structure sans se marcher
+sur les pieds.
+
+
 
 ## Récapitulatif
 
