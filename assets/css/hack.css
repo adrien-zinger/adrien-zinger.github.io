@@ -334,7 +334,7 @@ a:hover {
 
 .hack em:after,
 .hack em:before {
-    content: "*";
+    content: "";
     display: inline;
 }
 
@@ -552,9 +552,6 @@ textarea.form-control {
 select.form-control {
     border-radius: 0;
     background-color: transparent;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    -ms-appearance: none
 }
 
 .help-block {

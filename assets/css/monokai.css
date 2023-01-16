@@ -3,6 +3,12 @@
     padding: 10px !important;
 }
 
+.highlight * {
+    font-family: monospace !important;
+    font-size: 14px !important;
+    line-height: normal;
+}
+
 .highlight .hll {
     background-color: #272727 !important;
 }
