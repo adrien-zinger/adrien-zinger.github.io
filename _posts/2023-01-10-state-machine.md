@@ -849,13 +849,159 @@ solution la plus évidente est d'ajouter un mutex autour de la file partagée.
 Des solutions plus performantes entrent alors en scène.
 
 L'étape suivante d'une structure de donnée *thread-safe*, après le grand mutex,
-c'est le status *lock-free*. Dans le jargon, *lock-free* implique que l'appel
-d'une routine comme *Push* garantis que les appels parrallèls à cette même
-routine pourront se terminer pendant l'execution. Autrement dit, on arrive à
-s'organiser entre thread de façon à se partager la structure sans se marcher
-sur les pieds.
+c'est le status *lock-free*. Quand on parle d'algorithme *lock-free*, on veut
+simplement dire que l'appel d'une routine comme *Push* garantie que des appels
+parrallèls à cette même routine pourront se terminer à un moment de son
+execution. Autrement dit, on arrive à s'organiser entre thread de façon à se
+partager une structure sans se marcher sur les pieds.
 
+// todo
 
+## Machine à états industrielle
+
+Il peut arrivé qu'une machine à état soit nécessaire dans votre programme parce
+qu'il faut communiquer avec de l'embarqué. Il se peut également que les
+evennements reçus des composants embarqués soient invalides, arrivent à des
+moments improbables, se répetent plusieurs fois, ne sont pas dans l'ordre
+attendu.
+
+Définissons avec la bibliothèque Reagir une machine à état un peut plus
+réaliste. La lecture de l'entrée utilisateur est parrallèle à l'execution, donc
+on peut recevoir des évennements à tout moment. La machine à état quand à elle
+ressemble à ça :
+
+// todo shema
+// start A
+// A   + "gotoB"   -> B
+// A   + "gotoC"   -> C
+// B|C + "gotoD"   -> D
+// D   + "restart" -> A
+// D   + "stop"    -> E
+// E               -> quit
+
+Le code doit être clair et précis. Il doit être sans ambiguité et simple à
+modifier, car dans le milieu industriel, ce sont les machines à états qui
+bougent le plus. Par rapport à l'exemple précédent, la fonction `state_machine`
+ne vari quasiment pas. La structure de l'état ne pourrait contenir que des
+fonctions ainsi que le nécessaire à l'application. Les fonctions, toujours
+appelées dynamiquement, inscrieront les prochains évènement attendu.
+
+```c
+void fn_state_A(struct State *self)
+{
+    onEvent("gotoB", &state_B);
+    onEvent("gotoC", &state_C);
+}
+
+void fn_state_B(struct State *self)
+{
+    onEvent("gotoD", &state_D);
+}
+
+void fn_state_C(struct State *self)
+{
+    onEvent("gotoD", &state_D);
+}
+
+void fn_state_D(struct State *self)
+{
+    onEvent("restart", &state_A);
+    onEvent("stop", &state_E);
+}
+```
+
+Lorsque le programme entre dans l'état A. Il execute la fonction associée
+`fn_state_A`. Laquelle, à part les effets de bord qu'elle implique, peut
+inscrire quelque part que la machine s'attend maintenant à un évenement `gotoB`
+ou `gotoC` et aucun autre. Le signal d'un de ces évenements entrainera
+respectivement le passage à l'état B ou l'état C. On remarque instantanément
+les avantages de décrire sa machine à état de cette façon. C'est extrèmement
+fléxible et lisible. Avec cette technique basique, on est capable d'écrire des
+programme d'une étonnante compléxitée.
+
+Maintenant, regardons une problématique de discussion avec du hardware. À
+chaque état, on peut recevoir un ou plusieurs évènements. Dans ce cas, on a du
+text, mais ça pourrait être n'importe quel signal exterieur ou intérieur.
+Admettons qu'on soit en discution avec des composants qui fonctionnent en temps
+réel, et qu'un message comme "gotoB" puisse etre reçu plusieurs fois avant que
+la partie hardware ne se mette à jour. Le mieux à faire, c'est de centraliser
+le changement d'état grâce à une fonction de réduction.
+
+Une fonction de réduction donne la possibilité de définir des mises à jour de
+l'état basées sur l'état précédent, donc sur l'état actuelle. Elle est appelée
+en amont de l'execution d'un état et peut décider de celui ci. L'état suivant
+est définis par la valeur de retour de la fonction de réduction. Si cette
+valeur est null, la bibliothèque va ignorer l'évennement. Cette fonction permet
+de centraliser les transitions, vous pouvez rendre votre code plus facile à
+comprendre et à maintenir en séparant clairement les différentes actions qui
+peuvent modifier l'état de votre application.
+
+```c
+void *find_next_state(void *old_state, unsigned char *event)
+{
+    static char previous_event[30] = {'\0'};
+    if (strcmp(previous_event, (char *)event) == 0)         // P1
+        return NULL;
+    void *state = hashmap[hash(event)];
+    if (state != NULL)                                      // P2
+        memcpy(previous_event, event, 30);
+    return state;
+}
+
+void *reducer(void *old_state, void *event)
+{
+    void *ret = find_next_state(old_state, (unsigned char *) event);
+    free(event);
+    return ret;
+}
+```
+
+Dans la figure précédente, la ligne P1 protège des signaux dupliqués. On ne
+peut recevoir un signal qu'une seul fois, sa répétition est interdite. Notez
+qu'en pratique, vous pourrez vouloir ajouter des exeptions à cette rêgle. C'est
+possible que vous vouliez recevoir le signal "next" plusieurs fois. Pensez
+alors à ajouter des fonctions de vérification. Regardez la figure ci-dessous,
+ce morceau de code modifie la valeur du paramettre et signal en modifiant un
+flag qu'elle a été modifiée. En C ou C++, on aurait même pas besoin de préciser
+que ces paramettres sont atomiques, ni qu'elle sont cachée derrière un conteur
+de référence. Malgré tout, la particularitée de Rust à être *memory safe*
+n'exempte pas ce code d'un possible *data race*. Lorsqu'on ne précise pas
+l'ordre, ou qu'on donne un ordre *Relaxed*, à l'éxriture de variable, on ne
+peut pas confirmer avec certitude que `val` sera TOUJOURS modifié avant
+`modified_flag`. C'est ça qu'on appel un *spurious wake up*.
+
+Lorsqu'on ajoute à la place de P1 une exception, on doit toujours y ajouter si
+necessaire une protection. En général, une variable tierce qui permet de
+vérifier si l'évènement est unique.
+
+```rust
+fn modify_val(modified_flag: Arc<AtomicBool>, val: Arc<AtomicU32>) {
+    val.store(42, Relaxed);
+    modified_flag.store(true, Relaxed);
+}
+
+fn read_val(modified_flag: Arc<AtomicBool>, val: Arc<AtomicU32>) {
+    while modified_flad.load(Relaxed) == false {}
+    assert_eq!(val.load(Relaxed), 42); // Peut fail
+}
+```
+
+Gardons à l'esprit que ce code est executé de façon synchrone, ça signifie que
+l'état actuel est déjà executé. Autrement dit, on ne peut pas être
+simultanément dans une fonction comme `fn_state_A` et dans la fonction de
+réduction. Conclusion, quand on entre dans la fonction de réduction, la machine
+à état est abonnée aux seuls évènement attendus dans son context. La ligne P2
+nous permet d'ignorer ces évenements inatendu. Si nous sommes à l'état B, le
+signal `gotoC` sera ignoré. Ça peut être un comportement erroné dans certains
+cas, on peut souhaiter que l'état devienne C dans la mesure du possible. Si
+besoin, j'ajouterai un état transitoire qui tentera d'annuler les effets de
+bord de l'état précédent.
+
+Représenter son programme grâce à un diagramme d'états et de transition
+façilite le développement d'applications complexe. On se fait un cadeau en
+décrivant à haut niveau le fonctionnement de son programme. On peut
+vérifier l'exactitude, les besoins, transmettre une connaissance rapidement
+dans une équipe et améliorer la communication entre les composants.
 
 ## Récapitulatif
 
