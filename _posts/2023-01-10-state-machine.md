@@ -855,7 +855,56 @@ parrallèls à cette même routine pourront se terminer à un moment de son
 execution. Autrement dit, on arrive à s'organiser entre thread de façon à se
 partager une structure sans se marcher sur les pieds.
 
+Pour l'implémentation d'un *mpmc* (multiple producer - single consumer), on
+peut utiliser une version synchrone de l'algorithme de la file. Ça ressemble à
+ce qu'on a vu précédemment dans `send_state` et `receive_state`. Sauf qu'on
+différenciera le mutex de tête de file et celui de fin de file. Un producteur
+et un consommateur ne se bloqueront jamais l'un l'autre. Cependant, on utilise
+de vérou, ce qui veut dire qu'on aurait pas le droit d'appeler cette structure
+*lock-free*. Ici, on décrit un algorithme qui garantit qu'au moins un thread
+peut continuer à exécuter même si d'autres threads sont bloqués. Un
+consommateur peut s'executer même si un producteur block la file. Par contre,
+plusieur consommateur n'auront pas d'accès simultanés. Cette stratégie
+s'appelle *"livelock-free"*.
+
+```c
+void enqueue(queue_t *queue) {
+    node_t *node = (node_t *) malloc(sizeof(node_t)); // Step 1
+    pthread_mutex_lock(&queue->tail_lock);
+    queue->tail->next = node;                         // Step 2 & 3
+    queue->tail = node;  // todo il fut modifier cet algo pour qu'il corresponde plus
+    // a l'exemple lock-free... Pour l'exemple...
+    pthread_mutex_unlock(&q->t_lock);
+}
+
+void dequeue(queue_t *queue) {
+    pthread_mutex_lock(&queue->head_lock);
+    node_t *node = queue->head;
+    node_t *new_head = node->next;
+    if (new_head == NULL) {
+        pthread_mutex_unlock(&q->h_lock);
+        return -1;
+    }
+    queue->head = new_head;
+    pthread_mutex_unlock(&queue->head_lock);
+    free(node);
+}
+```
+
+À noter, si on retire les vérouillages/dévérouillages dans la figure si dessus,
+on obtient strictement l'algorithme synchrone de file. Et c'est dans cette
+voie: reproduire strictement une file synchrone, qu'on devra aller pour trouver
+un nouvel algorithme libéré des *mutexes*. Les étapes 3 et 4 de l'ajout dans la
+file ainsi que les 
+
+
+
+
+
 // todo
+
+
+
 
 ## Machine à états industrielle
 
@@ -987,15 +1036,16 @@ fn read_val(modified_flag: Arc<AtomicBool>, val: Arc<AtomicU32>) {
 ```
 
 Gardons à l'esprit que ce code est executé de façon synchrone, ça signifie que
-l'état actuel est déjà executé. Autrement dit, on ne peut pas être
+l'état actuel a déjà été executé. Premièrement, on ne peut pas être
 simultanément dans une fonction comme `fn_state_A` et dans la fonction de
-réduction. Conclusion, quand on entre dans la fonction de réduction, la machine
-à état est abonnée aux seuls évènement attendus dans son context. La ligne P2
-nous permet d'ignorer ces évenements inatendu. Si nous sommes à l'état B, le
-signal `gotoC` sera ignoré. Ça peut être un comportement erroné dans certains
-cas, on peut souhaiter que l'état devienne C dans la mesure du possible. Si
-besoin, j'ajouterai un état transitoire qui tentera d'annuler les effets de
-bord de l'état précédent.
+réduction. Deuxièmement, la fonction de réduction est éxécutée avant que l'état
+fasse ses effets. Conclusion, quand on entre dans la fonction de réduction, la
+machine à état est abonnée aux seuls évènements attendus dans son context
+actuel. La ligne P2 nous permet d'ignorer ces évenements inatendu. Si nous
+sommes à l'état B, le signal `gotoC` sera ignoré. Ça peut être un comportement
+erroné, dans certains cas, on peut souhaiter que l'état devienne vraiment C
+dans la mesure du possible. Si besoin, j'ajouterai un état transitoire qui
+tentera d'annuler les effets de bord de l'état précédent.
 
 Représenter son programme grâce à un diagramme d'états et de transition
 façilite le développement d'applications complexe. On se fait un cadeau en
