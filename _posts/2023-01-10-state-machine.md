@@ -11,7 +11,7 @@ published: true
 
 <span style="color: #A0A0A0">[2022-12-01] \#Design_pattern \#State_machine \#Code
 
-## Introduction
+## Chapitre 1 - Introduction
 
 Cet article est un patchwork de problèmes qui me sont venus à l'esprit ces
 derniers mois. La suite peut vous sembler être un puzzle sans solution que
@@ -73,7 +73,7 @@ aspects et pas d'autres. Même si j'ai le sentiment d'être dans le vrai,
 n'hésitez pas à me corriger si vous y voyez de grosse erreurs! Et il y en aura
 probablement, même après une centaine de relectures.
 
-## Pourquoi une machine à états ? 
+## Chapitre 2 - Pourquoi une machine à états ?
 
 > Ce que tu peux faire de mieux pour ton programme, c'est
 > d'en faire une machine à états.
@@ -89,44 +89,46 @@ Plus généralement, lorsqu'une fonction donnent une sortie différente après
 chaque appel. Suivant ces description, on remarque que les itérateurs et les
 générateurs sont aussi des genres de machines à états.
 
-Il y a différente façon d'aborder le problème. La façon scolaire, linéaire que
-la plupart des raisonements humains vont produire. Cette façon de faire pourra
-entre autre ressembler à un analyseur LL ou LR car les implémentations peut
-être très similaires. Souvent, ces deux méthodes divergent uniquement dans les
-structures qu'elles utilisent. On trouvera, dans tous les cas, la logique
-suivante : *"si j'ai tel événement dans tel context, je passe à tel état
-suivant"*. Au début de mes études je codais de nombreuses fonctions qui
-s'appelaient les unes les autres pleines de conditions, de branchements.
+Il y a différentes façons d'aborder le problème. La façon scolaire, linéaire
+que la plupart des raisonnements humains vont produire. Cette façon de faire
+pourra, entre autres, ressembler à une analyseur LL ou LR car les
+implémentations peuvent être très similaires. Souvent, ces deux méthodes se
+différencient uniquement dans les structures qu'elles utilisent. On trouvera,
+dans tous les cas, la logique suivante : "si j'ai tel événement dans tel
+contexte, je passe à tel état suivant". Au début de mes études, je codais de
+nombreuses fonctions qui s'appelaient les unes les autres, pleines de
+conditions et de branchements.
 
-Un raisonement de la sorte avec une implémentation bien linéaire, des états qui
-s'empilent puis se réduisent, est efficace si on souhaite développer rapidement
-un petit morceau de code. Mais ça devient vite ingérable dans une application
-qui traversera beaucoup d'états, si en plus aucuns des branchements ne peut
-être auto-générés ou encore que les transitions se complexifient. Idem, si le
-projet change ses grammaires, ou s'il s'avère qu'on commence à trouver des
-conflits.
+Un raisonnement de la sorte, avec une implémentation bien linéaire, des états
+qui s'empilent puis se réduisent, est efficace si on souhaite développer
+rapidement un petit morceau de code. Mais cela devient vite ingérable dans une
+application qui traversera beaucoup d'états, si en plus aucun des branchements
+ne peut être auto-généré ou encore que les transitions se complexifient. Idem,
+si le projet change ses grammaires ou s'il s'avère qu'on commence à y trouver
+des conflits.
 
-Depuis longtemp, on élude ces problèmes en utilisant des générateurs de
-parseurs (analyseurs). Vous avez peut être déjà entendu parler de yacc et lex.
+Depuis longtemps, on élude ces problèmes en utilisant des générateurs de
+parseurs (analyseurs). Vous avez peut-être déjà entendu parler de YACC et LEX.
 Ce genre de générateur existe dans de nombreux langages et sous de nombreuses
-formes. Il me semble qu'aujourd'hui leur utilisation est moins répandue, ou
-moins celebre. Dans mon entourage, parmis mes amis et collègues, je trouve peu
-de gens à qui ça laisse un bon souvenir. Pourtant, selon moi, c'est la meilleur
-solution pour générer des machines à états aujourd'hui. Se plonger dans une
-grammaire sous le format BNF, même si c'est ennuyant, vous fera gagner une base
-de code propre et un temps considérable. Toute méthode a ses avantages et ses
-inconvégnants. Dans certains cas, il sera plus simple d'écrire rapidement un
-analyseur à la main ou en utilisant une bibliothèque tièrce.
+formes. Il me semble qu'aujourd'hui, leur utilisation est moins répandue ou
+moins célèbre. Dans mon entourage, parmi mes amis et collègues, je trouve peu
+de gens à qui cela laisse un bon souvenir. Pourtant, selon moi, c'est la
+meilleure solution pour générer des machines à états aujourd'hui. Se plonger
+dans une grammaire sous le format BNF, même si c'est ennuyeux, vous fera gagner
+une base de code propre et un temps considérable. Toute méthode a ses avantages
+et ses inconvénients. Bien sûr, dans certains cas, il sera plus simple d'écrire
+rapidement un analyseur à la main ou en utilisant une bibliothèque tierce.
 
 Depuis quelques temps, on développe des analyseurs par petits morceaux. Ces
-combinaisons de parseurs ont des bon côtés. Déjà, on ne dépend pas d'un
-générateur et dans le meilleur des cas, on ne dépend pas non plus d'une
+combinaisons de parseurs ont des bons côtés. Déjà, on ne dépend pas d'un
+générateur et, dans le meilleur des cas, on ne dépend pas non plus d'une
 bibliothèque. Le développement est linéaire : je lis, je change d'état. Les
-états sont : des parseurs, des fonctions. Bien sûr, on retombe rapidement dans
-le piège des nombreuses fonctions pleines de conditions.
+états sont des parseurs, des fonctions. Bien sûr, on risque de retomber dans le
+piège des nombreuses fonctions pleines de conditions, il faut faire attention.
 
-Ensuite il y a la manière React, ou Redux. En faisant du React, on fait des
-parseurs, ou plutôt des machines à états. L'un ou l'autre, c'est presque pareil.
+Ensuite, il y a la manière React ou Redux. En faisant du React, on fait des
+parseurs, ou plutôt, des machines à états. L'un ou l'autre, c'est presque
+pareil.
 
 ```js
 // green thread 1
@@ -144,18 +146,18 @@ async function foo(dispatch) {
 ```
 
 React permet de recharger des composants (des machines à états) avec des
-valeurs mises à jour. On a à dispotion des fonctions comme `use_reducer` et
-`use_state`, qui sont les plus utilisées. Ces méthodes permettent chacune de
-créer une fonction de mise à jour (dispatch) en donnant pour paramettres une
-valeur initiale et une routine de _réduction_ : `(current_state, action) =>
+valeurs mises à jour. On a à disposition des fonctions comme `useReducer` et
+`useState`, qui sont les plus utilisées. Ces méthodes permettent chacune de
+créer une fonction de mise à jour (dispatch) en donnant pour paramètres une
+valeur initiale et une routine de réduction : `(current_state, action) =>
 new_state`. Une fonction de réduction permet de créer un nouvel état à partir
-de l'état courant et d'un évenement, telle qu'une entrée utilisateur. Pouvoir
-donner cette fonction en argument permet de de centraliser un comportement
-complexe en fonction d'un context. Avec `use_state` on se limite à prendre pour
-argument un état initial, il utilise sa propre fonction de réduction où le
-paramettre `action` est le le nouvel état.
+de l'état courant et d'un événement, tel qu'une entrée utilisateur. Pouvoir
+donner cette fonction en argument permet de centraliser un comportement
+complexe en fonction d'un contexte. Avec `useState`, on se limite à prendre
+pour argument un état initial, il utilise sa propre fonction de réduction où le
+paramètre `action` est le nouvel état.
 
-Le fonctionnement d'une machine à états React est alors décrite par des
+Le fonctionnement d'une machine à états React est alors décrit par des
 structures génériques dans une file et une fonction de transition si
 nécessaire.
 
@@ -173,28 +175,28 @@ function onStateChange(state) {
 }
 ```
 
-## Usage d'une machine à état
+## Chapitre 3 - Usage d'une machine à état
 
 Une machine à état est flexible, on l'adapte en fonction du besoin. Un
 itérateur, un générateur ou encore un analyseur sont des types de machines à
-états. Parfois un simple appel à un timeout peut cacher une machine à état, "en
-cours -> annulé", "ouvert -> fermé". Mais parmis tous, l'analyseur est un cas
-particulier. Le parseur suppose une fin à ces états. Que le programme soit
-écrit à l'aide d'un générateur ou avec la méthode des combinations, on attend
-des états qu'ils se résolvent et pour finir, arriver à l'état ultime, la
-sortie du programme avec succès.
+états. Parfois, un simple appel à un timeout peut cacher une machine à états :
+"en cours -> annulé", "ouvert -> fermé". Mais parmi tous, l'analyseur est un
+cas particulier. Le parseur suppose une fin à ces états. Que le programme soit
+écrit à l'aide d'un générateur ou avec la méthode des combinaisons, on attend
+des états qu'ils se résolvent et, pour finir, qu'ils arrivent à l'état ultime :
+la sortie du programme avec succès.
 
 Pour autant, avec la méthode React, on peut écrire des itérateurs, des
-parseurs, toutes les machines à états finies et infinies. Pour cette
-raison qu'elle est extrèmement éfficace pour la gestion d'une application.
-Faire avancer ses états avec React se résume à empiler des évenements et les
+parseurs, toutes les machines à états finies et infinies. C'est pour cette
+raison qu'elle est extrêmement efficace pour la gestion d'une application.
+Faire avancer ses états avec React se résume à empiler des événements et les
 traiter un par un.
 
-Les morceaux de codes qui suivront font partis d'une expérience pour créer une
+Les morceaux de codes qui suivront font partie d'une expérience pour créer une
 bibliothèque de zéro, avec les mêmes attentes qu'on pourrait avoir de React. Le
 sujet de l'expérience ici sera un programme simpliste. Il implémente un echo
-volontairement complexe (à ne pas refaire pas ça chez soit). Voici le
-comportement attendu :
+volontairement complexe (à ne pas refaire chez soi). Voici le comportement
+attendu :
 
 // todo remplacer avec un diagramme d'états.
 
@@ -204,14 +206,14 @@ comportement attendu :
 4. répéter à partir de 3.
 5. Le programme devra s'arrêter à la lecture du mot clef _"exit"_.
 
-Je commence par créer une structure représentant un état auquel est associé une
-méthode appliquant une des étapes du programme. La méthode associée
-dynamiquement variera lors d'une transition, ou bien pourra être modifié, puis
+Je commence par créer une structure représentant un état auquel est associée
+une méthode appliquant une des étapes du programme. La méthode associée
+dynamiquement variera lors d'une transition ou bien pourra être modifiée, puis
 validée avec la fonction `dispatch` que propose cette logique. Chacune des
 méthodes est représentative de l'état du programme (1, 2 ou 3 et plus).
 Visuellement, il suffit de lire une fonction pour comprendre ce qu'un état va
-avoir comme effet de bord, pour le développement de projet, un diagramme
-d'états suffiera à naviguer dans le code.
+avoir comme effet de bord. Pour le développement de projet, un diagramme
+d'états suffira à naviguer dans le code.
 
 ```c
 void step_1(struct State *self)
@@ -236,17 +238,17 @@ void step_n(struct State *self) // 3 et plus
 ```
 
 Il est important de noter que plusieurs lignes modifient la valeur de l'état.
-Ces valeurs sont modifiées en prévision de _l'itération suivante_ de mon
-programme. Autrement dit, je ne modifie pas mon état actuel mais l'état
-suivant. Dans certains cas, cette façon de faire peut poser problème. Notemment
-si dans le programme, plusieurs threads ont accès à cettevarible. Parmis les
-problèmes qu'on peut rencontrer, dans le mutlithreading, le fait de rendre
+Ces valeurs sont modifiées en prévision de l'itération suivante de mon
+programme. Autrement dit, je ne modifie pas mon état actuel, mais l'état
+suivant. Dans certains cas, cette façon de faire peut poser problème, notamment
+si dans le programme, plusieurs threads ont accès à cette variable. Parmi les
+problèmes qu'on peut rencontrer, dans le multithreading, le fait de rendre
 l'état actuel immutable devient important. Ne touchez pas à l'état courant,
-construisez en un nouveau, entourez les de *mutexes*.
+construisez-en un nouveau, entourez-le de *mutexes*.
 
 J'ai évoqué plus haut le terme d'itération. En quelques mots, le coeur de mon
-programme est une boucle infinie, qui à chaque nouvelle mise à jour
-executera la même fonction. La logique ne change pas, l'état si.
+programme est une boucle infinie, qui à chaque nouvelle mise à jour exécutera
+la même fonction. La logique ne change pas, l'état si.
 
 ```c
 int state_machine()
@@ -267,14 +269,15 @@ int state_machine()
 }
 ```
 
-Voici comment une machine à état infinie pourrait fonctionner. L'absurde
-complexité de cette exemple montre comment on peut se défaire d'une série de
+Voici comment une machine à état infinie pourrait s'implémenter. La complexité
+(absurde) de l'exemple montre comment on peut se défaire d'une série de
 conditions et d'intrications de monades. Par exemple, l'optimisation de la
 routine `before` qui, en premier lieu, retourne forcément 0, n'ayant aucune
-entrée à lire, ne fera rien, puis se met à jour. Dans un projet plus réaliste,
-ces petites différences sont importantes.
+entrée à lire, ne fera rien, puis se met à jour pour faire quelque chose. Dans
+un projet plus réaliste, ces petites différences sont importantes. Elle permet
+de contrôler à chaque état les effets de bord nécessaires ou superflus.
 
-# File d'états, file d'actions
+# Chapitre 4 - File d'états, file d'actions
 
 Je n'ai pas encore parlé d'une partie importante de l'exemple précédent. La
 lecture de l'entrée utilisateur. C'est à cet endroit que j'appelle la méthode
@@ -293,25 +296,26 @@ void *scan(void *_re)
 }
 ```
 
-Ce modèle de machine à états enfile des objets afin de les traiter de façon
-synchrone. Mais rien n'empêche l'accumulation des événements d'être asynchrone
-ou parrallèle. Alors on peut se poser quelques questions sur la résistance du
-modèle face au parrallèlisme.
+Ce modèle de machine à états enfile des objets pour les traiter de façon
+synchrone, mais rien n'empêche que l'accumulation des événements soit
+asynchrone ou parallèle. Il est donc important de se poser des questions sur la
+résistance du modèle face au parallélisme.
 
-Dans ce programme simple, j'ai de la chance pour deux raisons. La première,
-_scanf_ en C a une implémentation telle que même si plusieurs thread écoutaient
-en même temps, seulement l'un d'entre eux se réveillera avec un buffer. Je
-reviendrai sur la seconde raison plus tard. Pour l'instant immaginons que le
-programme écoute plusieurs entrées différentes, des appels réseau ou des
-notifications de l'OS. Les enfilement et défilements peuvent être concurents et
-même poser problème.
+Dans ce programme simple, j'ai de la chance pour deux raisons. La première est
+que _scanf_ en C a une implémentation telle que, même si plusieurs threads
+écoutent en même temps, seulement l'un d'entre eux se réveillera avec un
+buffer. La seconde raison sera abordée plus tard. Imaginons maintenant que le
+programme écoute plusieurs entrées différentes, comme des appels réseau ou des
+notifications de l'OS. Les opérations d'enfilage et de défilage peuvent être
+concurrentes et poser des problèmes.
 
-Pour les résoudre, on peut utiliser des techniques de partage de données
-appelés *"X producteur(s) / Y consommateur(s)"* où X et Y peuvent prendre la forme de
-*"unique"* ou *"multiple"*. Il existe de nombreuses implémentations et
-approches différentes, au moins une par bibliothèque standard, sans aucun doute.
-Celle qui est implémentée dans la bibliothèque Reagir n'est pas la plus
-efficace mais, pour commencer, elle est facile à comprendre.
+Pour résoudre les problèmes liés au parallélisme dans un modèle de machine à
+états, on peut utiliser des techniques de partage de données appelées "X
+producteur(s) / Y consommateur(s)" où X et Y peuvent prendre la forme de
+"unique" ou "multiple". Il existe de nombreuses implémentations et approches
+différentes, au moins une par bibliothèque standard. Celle qui est implémentée
+dans la bibliothèque React n'est peut-être pas la plus efficace, mais elle est
+facile à comprendre pour commencer.
 
 ```c
 static void send_state(struct Entry e)
@@ -347,32 +351,31 @@ void dispatch(struct Reaction *rea, void *arg)
 }
 ```
 
-Un appel à `dispatch` créé une nouvelle entrée. Cette fois-ci, l'entrée est une
-information qui sera traitée par la bibliothèque afin de passer d'un état à un
-autre. Tant que la bibliothèque peut faire défiler ces entrées, on avance dans
-la machine à états. On ne s'attend pas spécialement à un état final, simplement
-de continuer d'avancer. La fonction `dispatch` prend en argument la structure
-`Reaction` qui représente la machine à état qu'on souhaite altérer, ainsi qu'un
-second argument. Ce `arg` est l'argument de la fonction de réduction. Il peut
-être un nouvel état, si on a utilisé `use_state`, ou une action, si on a
-utilisé `use_reducer`. En fin de compte, la file contient des fonctions de
-réduction, qui seront appelées séquenciellement avec ses arguments. En d'autre
-termes, on enfile des Fonctors.
+Lorsqu'on appelle la fonction `dispatch`, on créé une nouvelle entrée qui sera
+traitée par la bibliothèque pour passer d'un état à un autre. La fonction
+`dispatch` prend en argument la structure `Reaction` qui représente la machine
+à états que l'on souhaite altérer, ainsi qu'un second argument qui peut être un
+nouvel état (si l'on utilise `use_state`) ou une action (si l'on utilise
+`use_reducer`). Cela permet de continuer à avancer dans la machine à états en
+enfilant des fonctions de réduction qui seront appelées séquentiellement avec
+leurs arguments. En d'autres termes, cela consiste à enfiler des foncteurs
+(Fonctors).
 
 Prenons un peu le temps de lire l'algorithme de la figure précédente. On
-remarque que ce code contient plusieurs vérous. Un lock coûte du temps au
-processeur. En tout cas c'est ce que j'ai appris. D'ici quelques années,
-j'aurai peut être tort de dire ça, mais si possible, aujourd'hui il est
-préférable d'éviter d'invoquer un lock du procésseur. Cette implémentation est
-peut être suffisante pour mon exemple ? Je n'ai pas besoin de code
-particulièrement rapide. Mais je peux encore aller plus loin. Je pourrais par
-exemple retirer complètement les locks.
+remarque que ce code contient plusieurs verrous. Un verrou coûte du temps au
+processeur. Il est préférable, si possible, d'éviter d'en invoquer un. Bon,
+cette implémentation peut être suffisante pour mon exemple, mais je pourrai
+aller très loin en retirant complètement ces verrous.
 
-L'utilisation que je fais de ma machine à état dans mon exemple _est synchrone_.
-Même si j'utilise deux threads différents. Je ne lis pas d'entrée utilisateur
-pendant l'execution de la boucle de la machine à états, ou même avant. A aucun
-moment, je peux envoyer un évennement ET en recevoir simultanement. Les lignes
-S2, S9 R1 et R8 sont donc inutiles dans mon cas.
+Le deuxième point qui me rend chanceux dans cette implémentation, c'est que
+l'utilisation que je fais de ma machine à état _est synchrone_. Même si
+j'utilise deux threads différents. Je ne lis pas d'entrée utilisateur pendant
+l'execution de la boucle de la machine à états, ou même avant. A aucun moment,
+je peux envoyer un évennement ET en recevoir simultanement. Les lignes S2, S9
+R1 et R8 sont donc inutiles dans mon cas.
+
+
+// todo continuer relecture et corrections a partir d'ici
 
 Même si mon programme communiquait avec d'autres, s'assuré d'un ping pong où
 chaque instance attend la réponse de l'autre peut être écrit sans aucun appel
@@ -403,67 +406,106 @@ variable sera organisé parmis les différents threads dans un ordre spécifié.
 ## Rapide rappel atomique
 
 Une opération atomique, c'est lire, ecrire, effectuer une opération basique
-comme `ET` ou `OU`, sur une petite partie de mémoire comme par exemple là où se
+comme `ET` ou `OU`, sur une petite partie de la mémoire comme par exemple là où se
 trouve un entier. Cette opération garantis qu'aucun autre thread du même
 programme va essayer de lire ou écrire pendant le temps de l'opération. Enfin,
-cette opération garantis un ordre définis que le processeur doit respecter.
+ces opérations garantissent que le processeur respectera un certain ordre définis
+d'execution.
 
-De base, sur un processeur intel, tout mouvement ou copie est, selon ce qu'on
-entend par là, atomique. Prenons l'instruction `mov` sur `x86`. Cette
-instruction permet selon son utilisation de copier une valeur ou de copier
-l'adresse de cette valeur. C'est cette diférence qui implique un déplacement
-*par copie* ou par *référence*. Elle peut être utilisé pour lire ou écrire,
-selon le sens dans lequel on place ces arguments. lorsqu'une instruction mov de
-lecture est exécutée, elle a un comportement similaire à l'ordonancement
-définis par *ACQUIRE* et lorsqu'une instruction mov d'écriture est exécutée,
-elle a un comportement similaire à l'ordonancement définis par *RELEASE*. Ce,
-sans avoir besoin de préciser quoi que ce soit. Sur `x86`, l'ordonnancement
-*RELAXED* est chimérique. On remarque que des opérations atomiques avec le flag
-*RELAXED* produisent le même résultat que des opérations dites "non-atomique".
+De base, sur un processeur intel, tout mouvement, selon ce qu'on entend par là,
+est atomique. Prenons l'instruction `mov` sur `x86`. Cette instruction permet
+selon son utilisation de copier une valeur ou de copier l'adresse de cette
+valeur. C'est cette différence qui implique un déplacement *par copie* ou par
+*référence*. Elle peut être utilisé pour lire ou écrire, selon le sens dans
+lequel on place les arguments. lorsqu'une instruction de lecture est exécutée,
+elle a un comportement similaire à l'ordonancement définis par *ACQUIRE* et
+lorsqu'une instruction d'écriture est exécutée, elle a un comportement
+similaire à l'ordonancement définis par *RELEASE*. Ce, sans avoir besoin de
+préciser quoi que ce soit. Sur `x86`, l'ordonnancement *RELAXED* est
+chimérique. C'est à dire que les compilations d'opérations atomiques avec le
+flag *RELAXED* produiront le même résultat que des opérations dites
+"non-atomique", ou des opérations atomiques *ACQUIRE/RELEASE*.
 
-Toute les opérations sont de l'écture et d'écriture sont donc "atomiques" sur
-`x86`. Mais pas sur tout les processeurs. Sur `ARM` par exemple, on devra
-utiliser des instructions tel que `dmb` pour préciser un ordre
+Toute les opérations de lécture et d'écriture sont donc "atomiques" sur `x86`.
+Mais ce n'est pas le cas sur tout les processeurs. Sur `ARM` par exemple, on
+devra utiliser des instructions tel que `dmb` pour préciser un ordre
 *ACQUIRE-RELEASE*. L'instruction `dmb` (data memory barrier) garantit que
 toutes les instructions de lecture ou écriture en mémoire exécutées avant elle
-sont terminées avant que celles exécutées après ne le soient. Il convient donc
-de dire, en écrivant du code plus haut niveau, comme du _Rust_ ou du _C_, que
-toute les opérations sont "non-atomique" tant que le code ne précise rien.
+soient bien terminées avant que de passer à d'autre instructions utilisant la
+même variable. Il convient donc de dire, en écrivant du code plus haut niveau,
+comme du _Rust_ ou du _C_, que toute les opérations sont "non-atomique" tant
+que le développeur ne précise rien de tel.
 
-Le processeur, pour plusieurs raisons, a le droit de superposer des opérations
-sur un thread. Ce qui peut rendre un programme avec des executions parrallèle
-difficile à se représenter. Avec des opérations atomiques et les flags
-`Acquire`, `Release` et `SeqCst`, on peut forcer le processeur à ne plus
-superposer les lectures et ecriture. On peut forcer un certain ordre, ou du
-moins, certaines contraintes.
+Le processeur, pour plusieurs raisons, peut avoir le droit de superposer des
+opérations sur un même thread. C'est ce qu'on appel le out-of-order (ooo). Ce
+qui peut rendre un programme avec des executions parrallèle difficile à se
+représenter et donc difficile à développer. Avec des opérations atomiques ainsi
+que les flags `Acquire`, `Release` et `SeqCst`, on peut forcer le processeur à
+ne plus superposer les lectures et ecriture. On peut forcer un certain ordre,
+ou du moins, certaines contraintes.
+
+```c
+while (ip < iend-15) {
+    U32 c = cached; cached = MEM_read32(ip); ip += 4;
+    Counting1[(BYTE) c     ]++;
+    Counting2[(BYTE)(c>>8) ]++;
+    Counting3[(BYTE)(c>>16)]++;
+    Counting4[       c>>24 ]++;
+    c = cached; cached = MEM_read32(ip); ip += 4;
+    Counting1[(BYTE) c     ]++;
+    Counting2[(BYTE)(c>>8) ]++;
+    Counting3[(BYTE)(c>>16)]++;
+    Counting4[       c>>24 ]++;
+    c = cached; cached = MEM_read32(ip); ip += 4;
+    Counting1[(BYTE) c     ]++;
+    Counting2[(BYTE)(c>>8) ]++;
+    Counting3[(BYTE)(c>>16)]++;
+    Counting4[       c>>24 ]++;
+    c = cached; cached = MEM_read32(ip); ip += 4;
+    Counting1[(BYTE) c     ]++;
+    Counting2[(BYTE)(c>>8) ]++;
+    Counting3[(BYTE)(c>>16)]++;
+    Counting4[       c>>24 ]++;
+}
+```
+
+La figure si dessus est extraite de l'implémentation de la construction d'un
+histogramme dans la bibliothèque *zstd*. Il peut sembler étrange de couper un
+conteur en 4 parties et d'en faire la somme plus tard. Surtout sur un seul
+thread, s'il y avait eu une strategie multithreadé on aurait pensé à un
+*diviser pour mieux rêgner* ou dans ce cas précis *pour rêgner plus vite*. En
+réalité, c'est exactement le but recherché dans cette routine. Un processeur
+*OOO* peut potentiellement executer simultanément la lecture de la mémoire
+(MEM_read32(ip)), les affectations des variables c en cache, et les accès aux
+différents tableaux.
 
 Une variable peut être atomique dans le cas où elle est assez petite. Elle est
 généralement une version d'un type primitif. On peut lui donner des
-ordonnacements d'accès en lecture et ecriture de manière à ce que différents
+ordonnancements d'accès en lecture et ecriture de manière à ce que différents
 threads ne tombent pas dans des *data races*. Et dans tout les cas, il est
 préférable, si on utilise ces variables, de donner l'ordonnancement `SeqCst`
-qui est la contrainte la plus élevée.
+qui est la contrainte la plus élevée, avant de tenter autre chose.
 
 ## Atomique ou pas atomique
 
-Il existe certains cas ou les choses peuvent bien se passer, même sans préciser
-l'atomicité dans le code. Ou avec des ordonnancements plus faible que `SeqCst`.
-Notamment sur des processeurs `x86`. C'est intéressant de savoir pourquoi et
-comment le mécanisme est traduit en instructions.
+Il existe certains cas où les choses peuvent bien se passer, même sans préciser
+l'atomicité dans le code, ou avec des ordonnancements plus faibles que
+`SeqCst`. Notamment sur des processeurs `x86`. Ça devient intéressant de savoir
+pourquoi et comment le mécanisme est traduit en instructions.
 
-Pour observer les instructions qu'un processeurs intel peut comprendre, on peut
-commencer par écrire avec un langage haut niveau, les différents concepts que
-la plupart des languages nous offrent. J'ecris donc un programme de diférentes
-façon, avec des méthodes plus ou moins validées par la communauté des
-développeurs. Ce programme consiste principalement en deux threads. L'un
-produit, l'autre consomme. Le producteur incrémente une variable jusqu'à ce
-quelle soit égale à 5, l'autre lit tant que la même variable ne vaut pas 5.
-Après quoi, le programme s'arrête.
+Pour observer les instructions qu'un processeur Intel peut comprendre, on peut
+commencer par écrire avec un langage haut niveau les différents concepts
+atomiques que la plupart des langages nous permettent d'utiliser. Je vais donc
+écrire un programme de différentes façons, avec des méthodes plus ou moins
+validées par la communauté des développeurs. Ce programme consiste
+principalement en deux threads. L'un produit, l'autre consomme. Le producteur
+incrémente une variable jusqu'à ce qu'elle soit égale à 5, l'autre lit tant que
+la même variable ne vaut pas 5. Après quoi, le programme s'arrête.
 
 Je vous épargnerai les déclarations de bibliothèques et la fonction de
 démarrage. On se concentrera sur les threads.
 
-La première version utilise des mutexes.
+La première version utilise des *mutexes*.
 
 ```c
 void *producer_thread(void *counter)
@@ -490,15 +532,15 @@ void *consumer_thread(void *counter)
 ```
 
 Dans cette version, mon postulat est que l'invocation d'un verrou autour de ma
-variable est inutilement couteuse. En plus, je dois gérer une variable globale
-pour controller l'accès. Cette méthode est particulièrement utilisée lorsque le
+variable est inutilement coûteuse. En plus, je dois gérer une variable globale
+pour contrôler l'accès. Cette méthode est particulièrement utilisée lorsque le
 type de `counter` n'est pas primitif. Si c'était une structure ou un tableau,
-cette méthode aurait acceptable.
+cette méthode serait acceptable. 
 
 A noter que ici, il serait simple de modifier le programme de façon à ce qu'on
-ai plusieurs producteurs sans créer de comportement indéfini. Il suffirai que
+ait plusieurs producteurs sans créer de comportement indéfini. Il suffirait que
 dans la boucle du producteur on teste la variable pour voir si elle est déjà
-égale à 5. Le cas échéant, on retourne un erreur ou on sort simplement de la
+égale à 5. Le cas échéant, on retourne une erreur ou on sort simplement de la
 fonction.
 
 Voilà la deuxième version:
@@ -940,7 +982,7 @@ manière executée extrèmement rapidement. Cette ligne, optionelle dans un sens
 nous assure cette vitesse de changement de la fin de file. Il se pourrait
 qu'après avoir validé P4, A aillant terminé d'ajouté un noeud, soit endormi et
 laisse la file dans un mauvaise état temporairement. Ce laps court de temps
-pourrait faire boucler sur P1, P2, P3 et P7 un certain nombre de fois qui
+pourrait faire boucler sur P1, P2 et P3 un certain nombre de fois, ce qui
 ralentirai le programme. Alors P7 trouve toute son utilité, si A *dort*, B
 termine le travail, recommence, et réussi.
 
