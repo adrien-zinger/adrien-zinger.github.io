@@ -255,15 +255,12 @@ int state_machine()
 {
     struct Reaction *re = use_state(make_init_state);
     struct State *st = re->state;
-    // Vérifie si la dernière entrée est *exit*
     if (st->before(st) == 1)
     {
-        void *_;
-        pthread_join(st->scan, _);
+        pthread_join(st->scan, NULL);
         return EXIT_SM;
     }
     st->step(st);
-    // Attend dans un autre thread une entrée
     async_scan(re);
     return CONTINUE_SM;
 }
@@ -381,11 +378,11 @@ Même si mon programme communiquait avec d'autres, s'assuré d'un ping pong où
 chaque instance attend la réponse de l'autre peut être écrit sans aucun appel
 de `lock/unlock`, autre part que dans `wait`. Tant qu'on peut considérer que
 l'ensemble du système fonctionne sur un unique thread en aditionnant les
-executions concurrentes, on peut se passer des vérous. Le fait d'avoir une
+executions concurrentes, on peut se passer des verrous. Le fait d'avoir une
 utilisation synchrone de cette file est l'unique justification valable pour
-retirer les vérous. Des appels parrallèles auraient des résultats
-imprévisibles. Par mesure de sécurité, il faut **toujours** entourer les
-variables conditionnelles par des vérous. Tenez ça pour une rêgle d'or.
+retirer les verrous. Des appels parrallèles auraient des résultats
+imprévisibles. Par mesure de sécurité, il faut toujours entourer les variables
+conditionnelles par des verrous. Tenez ça pour une rêgle d'or.
 
 Dans ce cas, on retire quelques utilisations de mutex et ça marche. Mais nous
 nous bornons à des systèmes *mono-threadé*. L'implémentation naïve ne suffis
@@ -406,11 +403,11 @@ variable sera organisé parmis les différents threads dans un ordre spécifié.
 ## Chapitre 5 - Rapide rappel atomique
 
 Une opération atomique, c'est lire, ecrire, effectuer une opération basique
-comme `ET` ou `OU`, sur une petite partie de la mémoire comme par exemple là où se
-trouve un entier. Cette opération garantis qu'aucun autre thread du même
+comme `ET` ou `OU`, sur une petite partie de la mémoire comme par exemple là où
+se trouve un entier. Cette opération garantis qu'aucun autre thread du même
 programme va essayer de lire ou écrire pendant le temps de l'opération. Enfin,
-ces opérations garantissent que le processeur respectera un certain ordre définis
-d'execution.
+ces opérations garantissent que le processeur respectera un certain ordre
+définis d'execution.
 
 De base, sur un processeur intel, tout mouvement, selon ce qu'on entend par là,
 est atomique. Prenons l'instruction `mov` sur `x86`. Cette instruction permet
@@ -706,7 +703,6 @@ pas à avoir à alouer de mémoire dynamiquement, et surtout, d'avoir un code
 petit.
 
 ```c
-/// Création de l'état initial
 void *make_init_state()
 {
     static char val[300] = {'\0'};
@@ -768,7 +764,6 @@ while (state_machine())
 }
 ```
 
-
 Dans l'implémentation de la boucle d'exécution, il n'y a aucun néttoyage des
 état. Dans un langage qui n'est pas *garbage collecté*, c'est un peu
 problématique. À la place, la bibliothèque appelle une fonction paramettrable, qui permet
@@ -817,12 +812,12 @@ contre des libérations de mémoire inattendues. L'accès à une structure, auss
 atomique soit-elle, ne protège pas contre l'apparition d'un pointeur NULL comme
 référence.
 
-Une manière plus simple de se protéger est, evidement, l'utilisation de vérous.
-En combinant une fonction de réduction qui enclenche un vérou et la fonction de
+Une manière plus simple de se protéger est, evidement, l'utilisation de verrous.
+En combinant une fonction de réduction qui enclenche un verrou et la fonction de
 nettoyage pour le déclencher, on peut réussir à protéger l'état contre des
-comportements indéfinis. Le vérou peut être contenu dans la machine à état.
+comportements indéfinis. Le verrou peut être contenu dans la machine à état.
 Mais de toute manière, il n'y a toujours qu'un état courrant, donc
-l'utilisation d'un vérou global est largement suffisant.
+l'utilisation d'un verrou global est largement suffisant.
 
 ```c
 void *locker(void *_, void *new_state)
@@ -853,7 +848,7 @@ struct Reagir* state_machine()
 Admettons que la situation nous impose d'optimiser la lecture et l'écriture de
 la file. Effectivement, la structure *mpsc* (multiple producer single
 consumer) implique un goulot d'étranglement. Admettons qu'utiliser un simple
-vérou sur la file de la machine à état n'est pas suffise pas, utiliser des
+verrou sur la file de la machine à état n'est pas suffise pas, utiliser des
 *mutex* coûte au CPU un temps précieux. Alors que fait-on ?
 
 Une file est une structure de donnée qui en théorie n'a pas de taille précise
@@ -903,7 +898,7 @@ peut utiliser une version synchrone de l'algorithme de la file. Ça ressemble à
 ce qu'on a vu précédemment dans `send_state` et `receive_state`. Sauf qu'on
 différenciera le mutex de tête de file et celui de fin de file. Un producteur
 et un consommateur ne se bloqueront jamais l'un l'autre. Cependant, on utilise
-de vérou, ce qui veut dire qu'on aurait pas le droit d'appeler cette structure
+de verrou, ce qui veut dire qu'on aurait pas le droit d'appeler cette structure
 *lock-free*. Ici, on décrit un algorithme qui garantit qu'au moins un thread
 peut continuer à exécuter même si d'autres threads sont bloqués. Un
 consommateur peut s'executer même si un producteur block la file. Par contre,
@@ -934,7 +929,7 @@ void dequeue(queue_t *queue) {
 Étant donné que mon implémentation ne possède qu'un seul consomateur, le verrou
 `head_lock` ne sera pas necessaire.
 
-À noter, si on retire les vérouillages/dévérouillages dans la figure si dessus,
+À noter, si on retire les verrouillages/déverrouillages dans la figure si dessus,
 on obtient strictement l'algorithme synchrone de file. Les étapes 2, 3 et 4
 d'ajout dans la file sont condensés en E3 et E4. Puis pour retirer, les lignes
 D2, D3 et D6 s'occupent des étapes 2 et 3 de l'algorithme. J'ajouterai en
@@ -1040,12 +1035,20 @@ l'échange de *head* et *next*, la *head* précédente est inaxéssible à tout
 autre threads. Avec certitude, on déréférencera jamais avec un pointeur null et
 on ne cherchera pas non plus à libérer sa mémoire une deuxième fois.
 
-L'implémentation de la bibliothèque standard respecte les critères d'un file
-*lock-free* non intrusive de multiples producteur et unique consomateur. Dans
-le pseudocode suivant, si un producteur p1 execute R1 et R2, puis un producteur
-p2 execute R1, R2 et R3, puis à nouveau p1 termine la routine avec R3, n
-considérent les paragraphes et exemples précédent, pensez vous que cette
-algorithme est linéarizable ?
+Les deux extraits de code précédent sont tirés d'une version d'implémentation
+d'une *Michael-Scott Queue*. L'algorithme en question corrige normalement le
+problème appelé *ABA*. Cette partie n'est pas présentée ici, notez cependant
+que dans un algorithme linéarizable, la plupart, pour ne pas dire tous,
+résolvent l'*ABA* en utilisant en utilisant un conteur qui vérifie la
+consistence entre les noeuds.
+
+Si vous développez en Rust l'implémentation dans la bibliothèque standard
+respecte les critères d'un file *lock-free* non intrusive de multiples
+producteur et unique consomateur. Dans le pseudocode suivant, si un producteur
+p1 execute R1 et R2, puis un producteur p2 execute R1, R2 et R3, puis à nouveau
+p1 termine la routine avec R3, n considérent les paragraphes et exemples
+précédent, pensez vous que cette algorithme est linéarizable ? Pourquoi il ne peut
+pas y avoir d'*ABA* avec cette méthode ?
 
 ```rust
 fn create():
@@ -1235,7 +1238,100 @@ dans une équipe et améliorer la communication entre les composants.
 
 ## Chapitre 10 - Le problème du dernier état
 
-Un problème qui se résoud avec un mutex ou plus proprement avec un system de parking.
+Revenons sur la file d'évenement un instant et comment elle est implémentée.
+Lorsque la boucle de la machine à états, le consomateur, attend un nouvel
+evenement à traiter, il est préférable de permettre au CPU d'utiliser le coeur
+inactif durant l'attente. Évidemment, ça dépend des cas, encore une fois.
+
+On souhaite utiliser un file non-bloquante et dans la mesure du possible, ne
+pas invoquer de verrou. Une implémentation similaire à celle de Réagir, qui
+utilise des variables conditionnelles, pourrait ressembler à la figure
+ci-dessous. La boucle de reception tente dans un premier temps de tirer un
+élément de la file, en cas de réussite (R5) il traite l'entrée, en cas d'echec,
+il attend une nouvelle entrée et un signal (S2).
+
+```rust
+send(e):
+    queue.push(e);                  // S1
+    signal(&push)                   // S2
+
+receiver_loop():
+    let e = queue.pop();            // R1
+    if e == Null:                   // R2
+        let guard = lock(&mutex);   // R3
+        wait(&push, &mutex);        // R4
+    else:
+        received(e);                // R5
+```
+
+On remarque dans un premier temps qu'on utilise un verrou autour de la variable
+conditionnelle. Purement pour respecter la bonne pratique. Celui-ci est
+optionnel, si le fonctionnement des *cond_var* le permettait, on s'en passerai.
+Mais cette implémentation à un plus gros défaut. Si le receveur vient déchouer
+à lire une entrée, au moment où il entre dans R3, un producteur peu entrer en
+action, terminer S1 et S2, avant que R4 soient invoqué, laissant alors le
+consomateur en état de veille avec une entrée (ou plus) dans la file. En fait,
+le problème est d'informer au thread du consommateur de ne pas se mettre en
+veille entre R2 et R4, ce qui est impossible, sans méchanismes de synchronization.
+
+La première technique, si je choisi de continuer avec des variables
+conditionnelles et des verrous, utilise le concepte ancien de sémaphore. Or, si
+je persiste, je fini dans tout les cas dans une file synchrone où, au mieux,
+quelques threads pourront être parrallèlisés avec difficulté. La deuxième
+méthode, la plus moderne, utilise des *futex*. Dans ces chapitres, je n'ai pas
+présenté le fonctionnement des variables conditionnelles, ni même des *mutex*.
+Je ne vais pas non plus entrer dans les détails des *futex*, mais les exemples
+qui suivront permettra d'eclaircir cette aspet de l'informatique pour ceux qui
+n'y jamais fait l'experience de ce méchanisme de synchronization.
+
+Prenons n'importe quel file *lock-free* qu'on peut trouver, que ça soit celle
+de la bibliothèque standard *Rust* ou bien une plus générique et linéarizable.
+Nous savons que le retour de la routine *pop* peut être null, même si un send
+vient d'être appelé. Dans la file *mpsc* de *Rust*, on peut avec un peu de
+chance identifier cet état d'inconsistence, il semble que dans ce cas précis,
+boucler sur la routine *pop* jusqu'à recevoir de la donnée soit une bonne chose
+à faire. Dans l'autre cas, autant plus probable, il faut savoir gérer le status
+de la structure *mpsc* en ne sachant rien des activités des threads
+parrallèles.
+
+Utiliser des futex dans cette situation est approprié. En quelque mots, ce
+méchanisme permet de creer un verrou si une variable atomique rempli une
+condition. Exactement comme pour le *compare and swap* , où l'objectif serait
+de verrouiller un mutex. La figure ci-dessous ressemble plus ou moins à ce
+qu'on pourrait faire avec des sémaphores de façon plus moderne. De plus,
+l'utilisation de *swap* qui retourne l'état précédent et de *fetch_sub* qui
+passera selon les cas du status Notified à Running et de Running à Waiting,
+fait que cette partie de l'implémentation est *wait-free*. Cette méthode est
+aussi connu sous le nom de *thread parker*, le consomateur attend jusqu'à ce
+qu'il soit notifié, à condition de ne pas déjà être notifié.
+
+Notez également deux choses. Premièrement, la boucle B5, celle-ci protège d'un
+possible *spurious wake up*, qu'on a déjà décrit, de la part du système,
+détécté par le test B7. Deuxièmement, ce n'est pas évident dans le pseudocode
+qui suit, appeler un futex aujourd'hui passe par un appel système, et donc est
+différent pour chaque architecture.
+
+```rust
+let Notified = 2, Running = 1, Waiting = 0;
+let status = Running;
+
+send(e):
+    queue.push(e);                              // A1
+    if status.swap(Notified) == Waiting:        // A2
+        futex_wake(&status);                    // A3
+
+receiver_loop():
+    let e = queue.pop();                        // B1
+    if e == Null:                               // B2
+        if status.fetch_sub(1) == Notified:     // B3
+            return;                             // B4
+        loop:                                   // B5
+            futex_wait(&status, Waiting)        // B6
+            if status.cas(Notified, Running):   // B7
+                break;                          // B8
+    else:
+        received(e);                            // B9
+```
 
 ## Récapitulatif
 
