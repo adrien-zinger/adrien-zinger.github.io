@@ -277,7 +277,7 @@ entrée à lire, ne fera rien, puis se met à jour pour faire quelque chose. Dan
 un projet plus réaliste, ces petites différences sont importantes. Elle permet
 de contrôler à chaque état les effets de bord nécessaires ou superflus.
 
-# Chapitre 4 - File d'états, file d'actions
+## Chapitre 4 - File d'états, file d'actions
 
 Je n'ai pas encore parlé d'une partie importante de l'exemple précédent. La
 lecture de l'entrée utilisateur. C'est à cet endroit que j'appelle la méthode
@@ -403,7 +403,7 @@ solution n'utilisant aucun mutex. L'algorithme tire avantage des fonctions
 atomiques du processeur. En d'autres termes, la lecture ou l'écriture d'une
 variable sera organisé parmis les différents threads dans un ordre spécifié.
 
-## Rapide rappel atomique
+## Chapitre 5 - Rapide rappel atomique
 
 Une opération atomique, c'est lire, ecrire, effectuer une opération basique
 comme `ET` ou `OU`, sur une petite partie de la mémoire comme par exemple là où se
@@ -427,7 +427,7 @@ flag *RELAXED* produiront le même résultat que des opérations dites
 "non-atomique", ou des opérations atomiques *ACQUIRE/RELEASE*.
 
 Toute les opérations de lécture et d'écriture sont donc "atomiques" sur `x86`.
-Mais ce n'est pas le cas sur tout les processeurs. Sur `ARM` par exemple, on
+Mais ce n'est pas le cas pour tout les processeurs. Sur `ARM` par exemple, on
 devra utiliser des instructions tel que `dmb` pour préciser un ordre
 *ACQUIRE-RELEASE*. L'instruction `dmb` (data memory barrier) garantit que
 toutes les instructions de lecture ou écriture en mémoire exécutées avant elle
@@ -437,7 +437,7 @@ comme du _Rust_ ou du _C_, que toute les opérations sont "non-atomique" tant
 que le développeur ne précise rien de tel.
 
 Le processeur, pour plusieurs raisons, peut avoir le droit de superposer des
-opérations sur un même thread. C'est ce qu'on appel le out-of-order (ooo). Ce
+opérations sur un même thread. C'est ce qu'on appel le out-of-order (*OOO*). Ce
 qui peut rendre un programme avec des executions parrallèle difficile à se
 représenter et donc difficile à développer. Avec des opérations atomiques ainsi
 que les flags `Acquire`, `Release` et `SeqCst`, on peut forcer le processeur à
@@ -486,7 +486,7 @@ threads ne tombent pas dans des *data races*. Et dans tout les cas, il est
 préférable, si on utilise ces variables, de donner l'ordonnancement `SeqCst`
 qui est la contrainte la plus élevée, avant de tenter autre chose.
 
-## Atomique ou pas atomique
+## Chapitre 6 - Atomique ou pas atomique
 
 Il existe certains cas où les choses peuvent bien se passer, même sans préciser
 l'atomicité dans le code, ou avec des ordonnancements plus faibles que
@@ -684,7 +684,7 @@ un comportement indéfini sur quelques processeurs. Et d'ailleurs le compilateur
 de Rust permettrait pas d'écrire le code sans l'utilisation du mot clef
 `unsafe`.
 
-## L'état dans lequel je suis
+## Chapitre 7 - L'état dans lequel je suis
 
 Une machine à états conserve toujours au moins sont état actuel. Que cet état
 soit représenté par une variable, une pile, ou simplement par la position de
@@ -848,10 +848,7 @@ struct Reagir* state_machine()
 }
 ```
 
-## Une file plus rapide
-
-TODO - présenter la file de Mickael-Scott. Lock-free qui contient des mutex.
-TODO - Problème de spin CPU et ajout de vérous bien placés.
+## Chapitre 8 - Une file plus rapide
 
 Admettons que la situation nous impose d'optimiser la lecture et l'écriture de
 la file. Effectivement, la structure *mpsc* (multiple producer single
@@ -919,7 +916,7 @@ void enqueue(queue_t *queue) {
     pthread_mutex_lock(&queue->tail_lock);              // E2
     queue->tail->next = node;                           // E3
     queue->tail = node;                                 // E4
-    pthread_mutex_unlock(&q->t_lock);                   // E5
+    pthread_mutex_unlock(&q->tail_lock);                // E5
 }
 
 void dequeue(queue_t *queue) {
@@ -927,14 +924,15 @@ void dequeue(queue_t *queue) {
     node_t *node = queue->head;                         // D2
     node_t *new_head = node->next;                      // D3
     if (new_head == NULL)                               // D4
-        return pthread_mutex_unlock(&q->h_lock);        // D5
+        return pthread_mutex_unlock(&q->head_lock);     // D5
     queue->head = new_head;                             // D6
     pthread_mutex_unlock(&queue->head_lock);            // D7
     free(node);                                         // D8
 }
 ```
 
-// todo retirer mutex consumer
+Étant donné que mon implémentation ne possède qu'un seul consomateur, le verrou
+`head_lock` ne sera pas necessaire.
 
 À noter, si on retire les vérouillages/dévérouillages dans la figure si dessus,
 on obtient strictement l'algorithme synchrone de file. Les étapes 2, 3 et 4
@@ -946,24 +944,34 @@ même instant. C'est dans cette direction: reproduire strictement une file
 synchrone, qu'on devra aller pour trouver un nouvel algorithme libéré des
 *mutexes*.
 
-L'opération est simple, passer de obstruction-free à lock-free. Il faut en premier
-lieu identifier les parties critiques des algorithmes `push` et `pop`. Pour enfiler une valeur,
-à priori, créer un noeud n'est pas critique. Trouver la fin de file devient plus difficile.
-Pour reprendre l'exemple précédent de choses qui pourraient mal se passer, la fin de file
-est sucéptible de changer juste avant de passer à la phase 3 ou 4 de l'algorithme. Première étape,
-nous proteger de ce changement inoportin, rendre toute modification atomique, séquenciellement
-consistente, utiliser `compare_and_swap`.
+Il faut donc passer le niveau de l'algorithme de *obstruction-free* à
+*lock-free*. En premier lieu identifions les parties critiques des algorithmes
+`push` et `pop`. Pour enfiler une valeur, à priori, créer un noeud n'est pas
+critique. Trouver la fin de file devient plus difficile. Pour reprendre
+l'exemple précédent de choses qui pourraient mal se passer, la fin de file est
+sucéptible de changer juste avant de passer à la phase 3 ou 4 de l'algorithme.
+La récupération de la fin de la file, phase 2, n'est pas critique si l'ecriture
+est conditionnée par le *non-changement* de la variable. Dans l'exemple
+lock-free `int c = load(&i); cas(&i, c, 2);`, la partie critique se trouve
+uniquement dans le *compare_and_swap*, si la valeur de *i* change entre
+l'opération de lecture et celle d'écriture, il est normal de vouloir annuler la
+modification. Les phases d'écritures, phase 3 et 4, sont des changements qu'il
+vaudrait mieux faire sous condition que la fin de file ainsi que son pointeur
+*next* n'aient pas changés. Plus exactement, si plusieurs threads essaient de
+modifier la fin de file en commençant par modifier son pointeur *next*,
+utilisez comme simple conditions *"le pointeur next est vide, je le modifie si
+effectivement il est vide"* suffis pour résoudre les *data races*.
 
 ```rust
 let tail = self.tail.load();                            // P1
 let next = (*tail).next.load();                         // P2
 if next.is_null() {                                     // P3
     if (*tail).next.compare_exchange(next, node) {      // P4
-        let _ = self.tail.compare_exchange(tail, node); // P5
+        self.tail.compare_exchange(tail, node);         // P5
         return;                                         // P6
     }
 } else {
-    let _ = self.tail.compare_exchange(tail, next);     // P7
+    self.tail.compare_exchange(tail, next);             // P7
 }
 ```
 
@@ -986,9 +994,99 @@ pourrait faire boucler sur P1, P2 et P3 un certain nombre de fois, ce qui
 ralentirai le programme. Alors P7 trouve toute son utilité, si A *dort*, B
 termine le travail, recommence, et réussi.
 
-// todo
+Une deuxième implémentation, celle qu'on peut trouver dans les bibliothèques
+standards modernes, ne se préocupe pas d'aider les autres threads. L'algorithme
+de file que je présente ici n'est pas particulièrement optimisé pour un *mpsc*.
+Elle est bien plus générique, elle cherche la performance dans des situations
+très variée. Le fait de mettre à jour la file en anticipant l'action d'un
+thread parrallèle est une méchanique pessimiste, répétée à la ligne Q7 dans la
+figure ci-dessous, qui dans certains cas peut se révéler indispenssable.
 
-## Machine à états industrielle
+Un algorithme comme celui-ci qui aide les threads à terminer leurs opérations
+d'écriture, aide forcement la lecture à avancer. Un algorithme écrit en faisant
+attention à ces détails garantis qu'un thread pourra toujours faire avancer son
+propre état de façon indépendante et ne restera jamais bloqué par d'autres
+threads. On dit de ces algorithmes qu'ils sont linéarizables.
+
+```rust
+let head = self.head.load();                            // Q1
+let tail = self.tail.load();                            // Q2
+let next = (*head).next.load();                         // Q3
+if std::ptr::eq(head, tail) {                           // Q4
+    if next.is_null() {                                 // Q5
+        return None;                                    // Q6
+    }
+    self.tail.compare_exchange(tail, next);             // Q7
+} else {
+    let ret = (*next).value;                            // Q8
+    if self.head.compare_exchange(head, next).is_ok() { // Q9
+        drop(head);                                     // Q10
+        return Some(ret);                               // Q11
+    }
+}
+```
+
+Dans une l'implémentation d'un *mpsc*, comme avec l'algorithme livelock-free
+présenté précedement, il n'est pas nécéssaire d'utiliser une variable atomique
+pour le pointeur vers la tête de file. Si le cas d'usage nous garantis qu'un
+unique thread pourra accêder à cette fonction, pas nécéssairement le même
+thread à chaque appel, la ligne Q9 peut être remplacée sans hésiter par une
+écriture tout ce qu'il y a de plus banale. Dans le cas générique, ce mécanisme
+de protéction protège les consomateurs de plusieurs scénari de duplication de
+donnée et *data races*. Il protège entre autre des doubles libérations de
+mémoire, on peut libérer la mémoire de l'ancien noeud sans crainte dans cet
+algorithme car l'échange en Q9 ne peut se faire que par un seul thread. Après
+l'échange de *head* et *next*, la *head* précédente est inaxéssible à tout
+autre threads. Avec certitude, on déréférencera jamais avec un pointeur null et
+on ne cherchera pas non plus à libérer sa mémoire une deuxième fois.
+
+L'implémentation de la bibliothèque standard respecte les critères d'un file
+*lock-free* non intrusive de multiples producteur et unique consomateur. Dans
+le pseudocode suivant, si un producteur p1 execute R1 et R2, puis un producteur
+p2 execute R1, R2 et R3, puis à nouveau p1 termine la routine avec R3, n
+considérent les paragraphes et exemples précédent, pensez vous que cette
+algorithme est linéarizable ?
+
+```rust
+fn create():
+    self.tail = self.head = dummy_ptr;
+
+fn push():
+    let node = Node::new();             // R1
+    let prev = self.next.swap(node);    // R2
+    prev->next.store(node);             // R3
+
+fn pop():
+    let tail = *self.tail.get();        // S1
+    let next = tail->next.load();       // S2
+    if !next.is_null():                 // S3
+        *self.tail.get() = next;        // S4
+        drop(tail);                     // S5
+        return Success                  // S6
+    if self.head.load() == tail:        // S7
+        return Empty                    // S8
+    return WaitingAnInput               // S9
+```
+
+Pour conclure ce chapitre, je voudrai attirer l'attention sur les lignes S7, S8
+et S9 de la figure précédente. L'implémentation de ce test est tout a fait
+optionnel, si le thread consommateur n'a pas encore accès à une information,
+bien qu'un producteur soit en train d'ajouter une information, la réponse
+*Empty* reste acceptable. D'autant plus que dans un thread A qui sera différent
+du thread du consommateur, l'execution de R1 peut potentiellement commencer
+lorsque S7 est validé, alors l'inconsistance de la file ne sera pas détectée.
+On peut penser que l'usage d'une file par rapport à une autre a toujours une
+raison valable, qu'un algorithme ne peut pas varier sous peine d'un danger
+imminent de comportement indéfini. On a montré le contraire dans ce chapitre,
+dans certains cas, on peut retirer des verrous ou des accès atomiques et tout
+ira bien. Certains préférereront un algorithme linéarizable, mais tout est une
+question d'opinion, de dosage, d'évaluation de risque, c'est pourquoi une
+implémentation qui est plus rapide dans 90% des cas et extremement coûteux dans
+les 10 derniers a sa place dans une bibliothèque standard. C'est pourquoi on
+peut espérer detecter une inconsistance (S7-S9), car dans ce cas, on sait
+comment réagir.
+
+## Chapitre 9 - Machine à états industrielle
 
 Il peut arrivé qu'une machine à état soit nécessaire dans votre programme parce
 qu'il faut communiquer avec de l'embarqué. Il se peut également que les
@@ -1134,6 +1232,10 @@ façilite le développement d'applications complexe. On se fait un cadeau en
 décrivant à haut niveau le fonctionnement de son programme. On peut
 vérifier l'exactitude, les besoins, transmettre une connaissance rapidement
 dans une équipe et améliorer la communication entre les composants.
+
+## Chapitre 10 - Le problème du dernier état
+
+Un problème qui se résoud avec un mutex ou plus proprement avec un system de parking.
 
 ## Récapitulatif
 
