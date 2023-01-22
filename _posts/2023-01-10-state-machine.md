@@ -13,7 +13,7 @@ published: true
 <div class="print">
     <h1 style="text-align: center;">Machines à états (première partie)</h1>
     <h2 style="text-align: center;">Multithreading, atomicité et files non-bloquantes</h2>
-    <div style="text-align: center;">Adrien Zinger, janvier 2023, blog maybeuninit.com</div>
+    <div style="text-align: center;">Adrien Zinger, janvier 2023, maybeuninit.com</div>
 </div>
 
 ## Introduction
@@ -101,7 +101,7 @@ aussi des genres de machine à états.
 
 Il y a différentes façons d'aborder le problème. La façon scolaire, linéaire
 que la plupart des raisonnements humains vont produire. Cette façon de faire
-pourra, entre autres, ressembler à une analyseur LL ou LR car les
+pourra, entre autres, ressembler à un analyseur LL ou LR car les
 implémentations peuvent être très similaires. Souvent, ces deux méthodes ne se
 différencient que dans les structures qu'elles utilisent dans l'implémentation. On y trouvera,
 dans tous les cas la logique suivante : "si j'ai tel événement dans tel
@@ -447,7 +447,7 @@ main():
     assert!(i == 2);
 ```
 
-De base, sur un processeur intel, tout mouvement, selon ce qu'on entend par là,
+De base, sur un processeur Intel, tout mouvement, selon ce qu'on entend par là,
 est atomique. Prenons l'instruction `mov` sur `x86`. Cette instruction est
 courante dans un programme, elle peut être produite par une assignation de
 variable ou encore un passage d'argument. Cette instruction permet selon son
@@ -513,7 +513,7 @@ compteur en 4 parties et d'en faire la somme plus tard. Surtout sur un seul
 thread, s'il y avait eu une strategie multithreadé on aurait pensé à un
 *diviser pour mieux rêgner*, ou dans ce cas précis *pour rêgner plus vite*. En
 réalité, c'est exactement le but recherché. Un processeur *OOO* peut
-potentiellement exécuter simultanément les opérations suivantes la lecture de
+potentiellement exécuter simultanément les opérations suivantes : la lecture de
 la mémoire à l'adresse *ip*, les affectations des variables *c* en cache, et les
 accès aux différents tableaux.
 
@@ -524,7 +524,7 @@ différents threads ne tombent pas dans des *data races*. Et dans tout les cas,
 il est préférable, si on utilise ces variables, de donner l'ordonnancement
 `SeqCst` qui est la contrainte la plus élevée avant de tenter autre chose. En
 ce qui concerne les conteneurs (set, hashmap, etc) une opération atomique est
-bien plus complexe à réaliser et nécessite des algorithmes de consensus
+bien plus complexe à réaliser et nécessite parfois des algorithmes de consensus
 avancés.
 
 ## Chapitre 5 - Atomique
@@ -579,10 +579,10 @@ type de `counter` n'est pas primitif. Si c'était une structure ou un tableau,
 cette méthode serait acceptable.
 
 À noter qu'ici, il serait simple de modifier le programme de façon à ce qu'on
-ait plusieurs producteurs sans créer de comportement indéfini. Il suffirait que
-dans la boucle du producteur on teste la variable pour voir si elle est déjà
-égale à 5. Le cas échéant, on retourne une erreur ou on sort simplement de la
-fonction.
+puisse avoir plusieurs producteurs sans créer de comportement indéfini. Il
+suffirait d'ajouter dans la boucle du producteur un test de la variable pour
+voir si elle est déjà égale à 5. Le cas échéant, on retourne une erreur ou on
+sort simplement de la fonction.
 
 Voilà la deuxième version:
 
@@ -629,7 +629,7 @@ des boucles infinies.
 La dernière version ci-dessous n'utilise même plus d'opérations atomiques et
 fonctionne parfaitement. Cette version ne marche que parce que les instructions
 `mov` ont le même comportement entre eux que des variables atomiques avec
-l'ordonnancement *ACQUIRE-RELEASE* sur un processeur Intel. De plus, le contexte
+les ordonnancements `ACQUIRE/RELEASE` sur un processeur Intel. De plus, le contexte
 n'a que deux threads.
 
 ```c
@@ -648,8 +648,8 @@ void *consumer_thread(void *counter)
 }
 ```
 
-En fait, qu'on utilise *RELAXED* ou *ACQUIRE/RELEASE* ne change rien. Cela dit,
-utiliser l'ordonnancement par défaut, *SeqCst* (Séquentiellement Consistent),
+En fait, qu'on utilise `RELAXED` ou `ACQUIRE/RELEASE` ne change rien. Cela dit,
+utiliser l'ordonnancement par défaut, `SeqCst` (Séquentiellement Consistent),
 reste la meilleure des pratiques. Ne vous risquez pas trop à changer cette
 règle pour des bouts de chandelle de performance.
 
@@ -657,7 +657,7 @@ Cette version ne permet pas du tout d'avoir de multiples producteurs. Pas du
 tout. On pourrait la modifier légèrement en utilisant la fonction atomique
 `compare_and_swap` dans la boucle du producteur. Cette fonction permet de
 vérifier si la valeur de `c` est bien celle qui se trouve dans le compteur au
-moment de l'échange. Et si ce n'est pas le cas, on récupère la valeur actuelle,
+moment de l'échange. Et si ce n'est pas le cas, on récupère sa valeur actuelle,
 et on essaie à nouveau si besoin. `compare_and_swap` est l'élément qui manquait
 aussi à la deuxième version. Cependant, si l'utilisation de `fetch_add` est
 *wait-free*, l'équivalent sans les *data race* avec `compare_and_swap` est
@@ -684,7 +684,7 @@ atomic_fetch_add(&i, 1);
 Spécifier un ordre dans lequel les threads vont accéder à une variable et les
 contraintes sur un seul thread est possible dans quasiment tout les langages
 permettant la parallélisation des exécutions. En Go, il n'est possible
-d'utiliser que l'ordonnancement *SeqCst*. En Rust, les types atomiques sont
+d'utiliser que l'ordonnancement `SeqCst`. En Rust, les types atomiques sont
 identiques au C/C++, bien qu'entre ces langages, certains choisissent de
 déprecier des méthodes et d'autre non. L'idée cependant est là. Avec
 l'atomicité, on peut par exemple simuler ce que ferait un mutex protegeant une
@@ -743,14 +743,14 @@ le programme grossirait en mémoire continuellement. Les états de la
 bibliothèque Reagir sont donc quelque part sur le tas, ou globaux. Par défaut,
 on les considère constants ou statiques.
 
-Dans la vie, ce n'est pas toujours pratique d'avoir des états constants et
-immutables. Dans la plupart des exemples qu'on trouve avec React, l'état est
-modifié au fur et à mesure. Personnellement, j'aime aussi considérer l'état
-comme une base avec laquelle je profile l'exécution, puis j'en tire l'état
-suivant si besoin. Contrairement au Rust, C me donne la liberté de créer des
-variables statiques mutables sans protections, ce qui rend d'ailleurs ce vieux
-langage non *memory safe*. En contre partie, ça me permet de ne pas à avoir à
-allouer de mémoire dynamiquement, et surtout, d'avoir un code simple.
+À l'écriture d'un programme, ce n'est pas toujours pratique d'avoir des états
+constants et immutables. Dans la plupart des exemples qu'on trouve avec React,
+l'état est modifié au fur et à mesure. Personnellement, j'aime aussi considérer
+l'état comme une base avec laquelle je profile l'exécution, puis j'en tire
+l'état suivant si besoin. Contrairement au Rust, C me donne la liberté de créer
+des variables statiques mutables sans protections, ce qui rend d'ailleurs ce
+vieux langage non *memory safe*. En contre partie, ça me permet de ne pas à
+avoir à allouer de mémoire dynamiquement, et surtout, d'avoir un code simple.
 
 ```c
 void *make_init_state()
@@ -785,20 +785,20 @@ nombreuses implémentations alternatives. Certaines me viennent à l'esprit en
 
 Vous avez peut-être remarqué une autre différence avec React qu'implique cette
 implémentation. En utilisant le framework javascript, appeler la méthode
-`dispatch` (celle qui permet de mettre à jour l'état) avec le même objet ne
-re-demande pas l'exécution de l'application, même si cet objet a été modifié.
+`dispatch` (qui permet de mettre à jour l'état) avec le même objet ne
+re-demande pas l'exécution du composant, même si cet objet a été modifié.
 Dans le cas ci-dessus, si on gardait la même logique le pointeur pour l'état
 initial ne pourrait pas être celui des états suivants. Donc ma bibliothèque est
 forcée d'accepter tout appel à `dispatch` sans vérifier la consistence ou
 l'égalité des états.
 
-Je recommande tout de même de ne pas utiliser l'état précédent dans la fonction
+Je recommande tout de même de ne pas réutiliser l'état précédent dans la fonction
 de dispatch sans savoir ce que vous faites. Le mieux serait de pouvoir utiliser
 une variable statique par état. La raison pour laquelle il n'est pas conseillé
-l'état précédent, est qu'il peut être modifié par d'autres parties de
+de garder l'état précédent, est qu'il peut être modifié par d'autres parties de
 l'application avant que la fonction de dispatch n'ait été exécutée ou pendant
-son transite dans la file d'évennements. Dans ce cas, des *data races* peuvent
-entraîner des bugs difficiles à déboguer.
+son transite dans la file d'évènements. Dans ce cas, des *data races* peuvent
+entraîner des erreurs difficiles à déboguer.
 
 Quelques chapitres au-dessus, on a vu comment des fonctions de réduction sont
 enfilées. J'ai précisé ensuite que ces fonctions sont exécutées
@@ -858,13 +858,13 @@ passera pas à B, mais la fonction de réduction ne peut pas avoir de
 comportement défini.
 
 Pour se protéger, la solution la moins évidente à réaliser, est de faire en
-sorte que le programme soit au choix résilient où qu'il y ai un consensus entre
+sorte que le programme soit au choix résilient ou qu'il y ai un consensus entre
 les threads. L'utilisation de structures non-bloquantes, encore, permet
 d'éviter des *data races*. La fonction de réduction pourrait tenter de
 remplacer l'ancien état avec un `compare_and_swap` élaboré, et essayer de
 nouveau tant que l'opération échoue. Dans ce cas, il faut aussi se protéger
 contre des libérations de mémoire inattendues. L'accès à une structure, aussi
-atomique soit-elle, ne protège pas contre l'apparition d'un pointeur NULL comme
+atomique soit-elle, ne protège pas contre l'apparition d'un pointeur nul comme
 référence.
 
 Une manière plus simple de se protéger est, évidemment, l'utilisation de
@@ -901,7 +901,7 @@ struct Reagir* state_machine()
 ## Chapitre 7 - Une file plus rapide
 
 Admettons que la situation nous impose d'optimiser la lecture et l'écriture de
-la file. Effectivement, la structure *mpsc* (multiple producer single consumer)
+la file. Effectivement, la structure *mpsc* (*Multiple Producer Single Consumer*)
 implique un goulot d'étranglement. Admettons qu'utiliser un simple verrou sur
 la file de la machine à états ne suffise pas car utiliser des *mutexes* coûte au
 CPU un temps trop précieux pour nous.
@@ -920,8 +920,8 @@ ce que font ces deux routines lorsqu'elles sont synchrones.
 
 *Pop*:
 1. Trouver la tête de la file.
-2. Trouver l'element suivant.
-3. Echanger le pointeur de en tête de file avec l'élément suivant.
+2. Trouver l'élément suivant.
+3. Échanger le pointeur de en tête de file avec l'élément suivant.
 4. Supprimer l'ancien noeud.
 
 Les pointeurs de tête et de fin sont initialisés avec un noeud vide qu'on
@@ -933,8 +933,8 @@ parallèles.
 
 // todo shema
 
-La figure ci-dessus montre un des nombreux scénari de désynchronisation qui
-pourrait arriver. En fait, en utilisant cette structure non protégée, ça ne se
+La figure ci-dessus montre un des nombreux scénarios de désynchronisation qui
+pourraient arriver. En fait, en utilisant cette structure non protégée, ça ne se
 passera quasiment jamais bien. Si on reste dans des exécutions concurrentes, dans des
 *green threads*, pourquoi pas. Mais en incluant du parallélisme, il y a un fort
 risque de perte de données et de comportement indéfini. Dans ce cas, la
@@ -952,8 +952,8 @@ les pieds. Précisons tout de même qu'on utilise l'expression *se terminer*
 sont deux concepts distincts qu'on différencie entre *parallélisation* et
 *linéarisabilité*.
 
-Pour l'implémentation d'un *mpmc* (*Multiple Producer Single Consumer*), on
-peut utiliser une version synchrone de l'algorithme de la file. Ça ressemble à
+Pour l'implémentation d'une file adaptée au *mpmc*, on
+peut utiliser une version synchrone de l'algorithme. Ça ressemble à
 ce qu'on a vu précédemment dans `send_state` et `receive_state`. Sauf qu'on
 différenciera le mutex de tête de file et celui de fin de file. Un producteur
 et un consommateur ne se bloqueront jamais l'un l'autre. Cependant, on utilise
@@ -994,7 +994,7 @@ ci-dessus, on obtient strictement l'algorithme synchrone de file. Les étapes 2,
 lignes D2, D3 et D6 s'occupent des étapes 2 et 3 de l'algorithme. J'ajouterai
 en commentaire que les lignes E3 et D3 sont des opérations qu'on considère
 comme atomiques ici. C'est-à-dire qu'elles ne peuvent pas être réalisées
-strictement en même temps. C'est dans cette direction: reproduire strictement
+strictement en même temps. C'est dans cette direction : reproduire strictement
 une file synchrone, qu'on devra aller pour trouver un nouvel algorithme libéré
 des *mutexes*.
 
@@ -1029,7 +1029,7 @@ if next.is_null() {                                     // P3
 }
 ```
 
-Cet extrait de la méthode `enqueue` de mon implémentation rust de la file
+Cet extrait de la méthode `enqueue` de mon implémentation en Rust de la file
 d'attente non-bloquante, simplifiée pour l'occasion, réalise strictement les
 mêmes actions que l'implémentation livelock-free. On trouve les lignes E3 et E5
 très ressemblantes à P4 et P5, outre le fait que la condition pour assigner
@@ -1057,7 +1057,7 @@ je présente n'est pas particulièrement optimisée pour un *mpsc*. Elle est bie
 plus générique, elle cherche la performance dans des situations très variées.
 Le fait de mettre à jour la file en anticipant l'action d'un thread parallèle
 est une mécanique pessimiste, répétée à la ligne Q7 dans la figure ci-dessous,
-qui dans certains cas peut se révéler indispensable.
+mais qui dans certains cas peut se révéler indispensable.
 
 Un algorithme comme celui-ci qui aide les threads à terminer leurs opérations
 d'écriture, aide forcement la lecture à avancer. Un algorithme écrit en faisant
@@ -1089,12 +1089,12 @@ pour le pointeur vers la tête de file. Si le cas d'usage nous garantit qu'un
 unique thread pourra accéder à cette fonction, pas nécessairement le même
 thread à chaque appel, la ligne Q9 peut être remplacée sans hésiter par une
 écriture tout ce qu'il y a de plus banale. Dans le cas générique, ce mécanisme
-protège les consommateurs de plusieurs scénarii de duplication de données et de
+protège les consommateurs de plusieurs scénarios de duplication de données et de
 *data races*. Il protège entre autres des doubles libérations de mémoire, on
 peut libérer la mémoire de l'ancien noeud sans crainte dans cet algorithme car
 l'échange en Q9 ne peut se faire que par un seul thread. Après l'échange de
 *head* et *next*, la *head* précédente est inaccessible à tout autres threads.
-Avec certitude, on ne déréférencera jamais un pointeur null et on ne cherchera
+Avec certitude, on ne déréférencera jamais un pointeur nul et on ne cherchera
 pas non plus à libérer sa mémoire deux fois.
 
 Les deux extraits de code précédent sont tirés d'une version d'implémentation
@@ -1109,9 +1109,9 @@ Si vous développez en Rust, l'implémentation dans la bibliothèque standard
 respecte les critères d'une file *lock-free* non intrusive de multiples
 producteurs et unique consommateur. Dans le pseudocode suivant, si un
 producteur p1 exécute R1 et R2, puis un producteur p2 exécute R1, R2 et R3,
-puis à nouveau p1 termine la routine avec R3, en considérent les paragraphes et
+puis p1 termine la routine avec R3, en considérent les paragraphes et
 exemples précédents, pensez vous que cet algorithme est linéarisable ? Pourquoi
-il ne peut pas y avoir d'*ABA* avec cette méthode ?
+ne peut-il pas y avoir d'*ABA* avec cette méthode ?
 
 ```rust
 fn create():
@@ -1140,7 +1140,7 @@ A voir dans un bonus potentiellement -->
 Pour conclure ce chapitre, je voudrais attirer l'attention sur les lignes S7,
 S8 et S9 de la figure précédente. L'implémentation de ce test est tout à fait
 optionnelle, si le thread consommateur n'a pas encore accès à une information,
-bien qu'un producteur soit en train d'ajouter une information, la réponse
+bien qu'un producteur soit en train d'en ajouter une, la réponse
 *Empty* reste acceptable. D'autant plus que dans un thread A qui sera différent
 du thread du consommateur, l'exécution de R1 peut potentiellement commencer
 lorsque S7 est validé, alors l'inconsistance de la file ne sera pas détectée.
@@ -1153,12 +1153,12 @@ question de contexte, d'opinion, de dosage, d'évaluation de risque, c'est pourq
 implémentation qui est plus rapide dans 99% des cas et extrêmement coûteux dans
 le dernier a sa place dans une bibliothèque standard. C'est pourquoi on peut
 aussi espérer détecter une inconsistance (S7-S9), car dans ce cas, on sait
-comment réagir au mieux et améliorer, du fait, une moyenne de vitesse d'execution.
+comment réagir au mieux et améliorer, du fait, une vitesse moyenne d'execution.
 
 ## Chapitre 8 - Machine à états industrielle
 
 Il peut arriver qu'une machine à états soit nécessaire dans votre programme car
-il est nécessaire de communiquer avec des composants embarqués. Il se peut
+pour communiquer correctement avec des composants embarqués. Il se peut
 également que les événements reçus de ces composants soient invalides, arrivent
 à des moments imprévus, se répètent plusieurs fois, ou ne soient pas dans
 l'ordre attendu.
@@ -1166,7 +1166,7 @@ l'ordre attendu.
 En utilisant la bibliothèque Reagir, définissons une machine à états un peu
 plus réaliste. Cette fois-ci, la lecture de l'entrée utilisateur est parallèle
 à l'exécution, donc on peut recevoir des événements à tout moment. Nous ne
-pouvons pas non plus garantir que les composants du système nous enverrons des
+pouvons pas garantir que les composants du système nous enverrons des
 signaux lisibles ou cohérents. L'automate ressemble à ceci :
 
 // todo shema
@@ -1221,9 +1221,9 @@ avantages de décrire sa machine à états de cette manière : elle est extrème
 fléxible et lisible. Avec cette technique de base, il est possible d'écrire des
 programmes d'une étonnante compléxité.
 
-En ce qui concerne la communication avec des composants matériels, il est
+En ce qui concerne la communication avec d'autres composants, il est
 important de noter que chaque état peut recevoir un ou plusieurs événements, dû
-à du bruit ou à un mauvais traitement du signal dans un composant plus bas
+à du bruit ou à un mauvais traitement du signal dans une partie plus bas
 niveau. Dans notre exemple, nous recevons du texte, mais cela pourrait être
 n'importe quel signal externe ou interne. Admettons que nous soyons en train de
 communiquer avec des composants qui fonctionnent en temps réel, et qu'un
@@ -1274,7 +1274,7 @@ préciser que ces paramètres sont atomiques, ni qu'elles sont cachées derrièr
 un compteur de référence. Malgré tout, la particularitée de Rust à être *memory
 safe* n'exempte pas ce code d'un possible *data race*. Lorsqu'on ne précise pas
 l'ordre, ou qu'on donne un ordre *Relaxed*, à l'écriture de variable, on ne
-peut pas confirmer avec certitude que `val` sera TOUJOURS modifié avant
+peut pas confirmer avec certitude que `val` sera toujours modifié avant
 `modified_flag`. C'est ça qu'on appel un *spurious wake up*.
 
 Lorsqu'on ajoute à la place de P1 une exception, on doit toujours y ajouter si
@@ -1314,7 +1314,7 @@ l'exactitude, les besoins, transmettre une connaissance rapidement dans une
 ## Chapitre 9 - Le problème du dernier état
 
 Revenons sur la file d'évenement un instant et comment elle est implémentée.
-Lorsque la boucle de la machine à états, le consommateur, attend un nouvel
+Lorsque dans la boucle de la machine à états le consommateur attend un nouvel
 évènement à traiter, il est préférable de permettre au CPU d'utiliser le coeur
 inactif durant l'attente. Évidemment, ça dépend des cas, encore une fois.
 
@@ -1376,12 +1376,12 @@ threads parallèles.
 Utiliser des futexes dans cette situation est approprié. En quelques mots, ce
 mécanisme permet de créer un verrou si une variable atomique remplit une
 condition. Exactement comme pour le *compare and swap* , où l'objectif serait
-de verrouiller un mutex. La figure ci-dessous ressemble plus ou moins à ce
+d'enclencher l'attente d'un signal. La figure ci-dessous ressemble plus ou moins à ce
 qu'on pourrait faire avec des sémaphores de façon plus moderne. De plus,
 l'utilisation de *swap* qui retourne l'état précédent et de *fetch_sub* qui
 passera selon les cas du status Notified à Running et de Running à Waiting,
 fait que cette partie de l'implémentation est *wait-free*. Cette méthode est
-aussi connue sous le nom de *thread parker*, le consommateur attend jusqu'à ce
+aussi connue sous le nom de *"thread parker"*, le consommateur attend jusqu'à ce
 qu'il soit notifié, à condition de ne pas déjà être notifié.
 
 Notez également deux choses. Premièrement, la boucle B5, celle-ci protège d'un
