@@ -15,15 +15,32 @@
   <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/dark-grey.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/site-dark.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/comments.css" />
+  <style media="screen">
+    .print {
+      display: none;
+    }
+  </style>
   <style media="print">
     * {
       text-align: justify;
+    }
+
+    .web {
+      display: none;
+    }
+
+    body {
+      font-family: 'Times New Roman', Times, serif;
+    }
+
+    code * {
+      font-family: monospace;
     }
   </style>
 </head>
 
 <body class="hack dark-grey">
-  <div class="theme-switch-wrapper">
+  <div class="web theme-switch-wrapper">
     <label class="theme-switch" for="checkbox">
       <input type="checkbox" id="checkbox" />
       <div class="slider round"></div>
@@ -54,8 +71,8 @@
 
   <div class="main container">
     {% if page.comments_id %}
-    <a style="font-size: 15px" href="{{ site.url }}"><b>OTHER POSTS</b></a>
-    <a style="font-size: 15px" href="/feed.xml" target="_blank">RSS <i>flux</i></a>
+    <a class="web" style="font-size: 15px" href="{{ site.url }}"><b>OTHER POSTS</b></a>
+    <a class="web" style="font-size: 15px" href="/feed.xml" target="_blank">RSS <i>flux</i></a>
     <br />
     <br />
     {% endif %}
