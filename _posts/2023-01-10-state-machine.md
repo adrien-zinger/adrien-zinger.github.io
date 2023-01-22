@@ -30,52 +30,52 @@ nécessaire d'utiliser un framework pour qu'un programme ressemble à une machin
 
 Je découperai mon travail en trois parties, dont ces prochains chapitres en
 constitueront la première. Chacune d'entre elles aura un focus précis sur des
-mécanismes disponibles en informatique j'utiliserai l'implémentation de
-machines à états comme prétexte pour parler de ces mécanismes. Cette partie
-sera consacrée aux files d'événements qui modifient ces machines à états. Cette
-file d'événements doit être traitée de façon séquentielle, elle représente donc
-un goulot d'étranglement pour les performances d'un programme. Je ne dis pas
-qu'il est effectivement important de se soucier à ce point des performances
-d'une machine à états. Cependant, traiter ce sujet offre l'occasion de regarder
-de plus près ce qui peut être utilisé dans des programmes multithreadés. Je ne
-peux pas dire non plus dans quels contextes ces mécanismes sont réellement
-utiles dans la vie. Ils sont plus intéressants qu'utiles. Mais ils existent et
-sont utilisés, pour des raisons parfois arbitraires, à cause  de croyances
-personnelles, ou bien avec de bonnes raisons, grâce à des connaissances
-poussées du sujet. Parfois, plus simplement, parce qu'un sous-problème
-nécessite une attention particulière et doit être le plus performant possible,
-donc on essaie plusieurs méthodes, souvent empiriquement. Si j'échoue à faire
-comprendre pour quelles raisons une machine à états correspond à votre cas
-d'usage, ces chapitres pourront être intéressants au moins pour les sujets
-variés qu'ils abordent.
+mécanismes disponibles en informatique et j'utiliserai l'implémentation de
+machines à états comme prétexte pour parler de ces derniers. Cette partie sera
+consacrée aux files d'événements qui modifient ces automates. Dans ce contexte,
+les files d'événements doivent être traitées de façon séquentielle, elles
+représentent donc des goulots d'étranglement pour les performances d'un
+programme. Je ne dis pas qu'il est effectivement important de se soucier à ce
+point des performances d'un automate. Cependant, traiter ce sujet offre
+l'occasion de regarder de plus près ce qui peut être utilisé dans un programme
+multithreadé. Je ne peux pas non plus dire dans quels contextes ces mécanismes
+sont réellement appliqués dans la vie, ils n'en restent pas moins intéressants.
+Mais ils existent et sont utilisés, pour des raisons parfois arbitraires, à
+cause de croyances personnelles, ou bien plus raisonnablement, grâce à des
+connaissances poussées du sujet. Parfois, plus simplement, ils sont présents
+parce qu'un sous-problème nécessite une attention particulière et doit être le
+plus performant possible, on essaie donc plusieurs méthodes, souvent
+empiriquement. Si j'échoue à faire comprendre pour quelles raisons une machine
+à états correspond à votre cas d'usage, ces chapitres pourront être
+intéressants au moins pour les sujets variés qu'ils abordent.
 
 Je ne présenterai donc pas tout à fait, comme pourrait l'indiquer le titre
-trompeur, les machines à états. Je ne les présenterai qu'en partie. Mais pour
-le contexte je ferai tout de même une petite introduction sur l'état de l'art
-des machines à états. J'y ajouterai quelques opinions personnelles, également
-partagées avec quelques collègues et amis, qui sont cela dit tout à fait
-subjectives. Pour l'introduction, j'utiliserai un langage plus adapté pour
-parler de parseurs (analyseurs syntaxique). Même si un analyseur est un
-sous-type de machine à états, le vocabulaire sera suffisant. Je parlerai donc
-de grammaires, de contextes, de conflits, etc.
+trompeur, les machines à états. Mais pour le contexte je ferai tout de même une
+petite introduction sur l'état de l'art aujourd'hui. J'y ajouterai quelques
+opinions personnelles, également partagées avec quelques collègues et amis, qui
+sont cela dit tout à fait subjectives. Pour l'introduction, j'utiliserai un
+langage qui est habituellement plus adapté pour parler de parseurs (analyseurs
+syntaxique). Même si un analyseur est un sous-type de machine à états, le
+vocabulaire sera suffisant. Je parlerai donc de grammaires, de contextes, de
+conflits, etc.
 
 Un chapitre sur deux en moyenne sera dédié au multithreading, aux structures de
 données non-bloquantes. En particulier des files d'attente, des implémentations
 de *mpsc*, d'opérations atomiques et de mécanismes de synchronisation. Ce sujet
-est bien plus complexe que ce qu'il laisse paraître. Changer une structure
-synchrone en une structure non-bloquante asynchrone peut avoir un fort impacte
-sur un programme. Parfois, l'espace mémoire que la structure prendra sera bien
-plus grand que l'original. Parfois, il faudra faire des concessions sur les
-performances, se poser les bonnes questions.
+est bien plus complexe que ce qu'il ne le laisse paraître. Changer une
+structure synchrone en une structure non-bloquante asynchrone n'est pas anodin
+et peut avoir un fort impacte sur un programme. Parfois, l'espace mémoire que
+la structure prendra sera bien plus grand que l'original. Parfois, il faudra
+faire des concessions sur les performances et se poser les bonnes questions.
 
 Quelques exemples en C, Rust et Pseudocode accompagneront mon propos. Le code
-complet est disponible en annexe. Je vous recommande de ne pas trop vous
-attarder sur ces annexes et de considérer qu'il n'y a pas de réponse parfaite
-et encore moins d'implémentation unique. Aussi, j'espère que vous me
+complet est disponible en annexe. Je vous recommande toutefois de ne pas trop
+vous y attarder et de considérer qu'il n'y a pas de réponse parfaite et encore
+moins d'implémentation unique à une solution. Aussi, j'espère que vous me
 pardonnerez les simplifications que je fais en Rust, étant un langage plutôt
 verbeux, j'ai dû tailler quelques morceaux pour en extraire l'essentiel.
 
-J'en profite pour vous prévenir, je suis conscient de maîtriser certains
+J'en profite pour vous prévenir que je suis conscient de maîtriser certains
 aspects et pas d'autres. Même si j'ai le sentiment d'être dans le vrai,
 n'hésitez pas à me corriger si vous y voyez des erreurs. Et il y en aura
 forcement, même après une centaine de relectures. Je serai heureux de recevoir
@@ -91,12 +91,13 @@ Dans un projet, on souhaite une machine à états quand une partie du programme
 gère un contexte global ou temporaire, subit des modifications lors d'appels
 exterieurs ou doit réagir à différentes entrées et retourner un résultat
 cohérent avec celles-ci, en tenant compte d'un historique. Une telle machine
-peut être utilisée pour modeler un composant d'un système distribué par exemple, et même le
-système complet. Chaque état, dans ce cas, peut contenir un snapshot à un instant T
-qui inclue l'état de la mémoire des composants (processeurs) ainsi que les
-messages en transite. Plus généralement, on souhaite une machine à états lorsqu'une fonction donnent une sortie
-différente après chaque appel. On remarque que les itérateurs et les
-générateurs sont aussi des genres de machine à états.
+peut être utilisée pour modeler un composant d'un système distribué par
+exemple, et même le système complet. Chaque état, dans ce cas, peut contenir un
+snapshot à un instant T qui inclue l'état de la mémoire des composants
+(processeurs) ainsi que les messages en transite. Plus généralement, on
+souhaite une machine à états lorsqu'une fonction donne une sortie différente
+après chaque appel. On remarque que les itérateurs et les générateurs sont
+aussi des genres de machine à états.
 
 Il y a différentes façons d'aborder le problème. La façon scolaire, linéaire
 que la plupart des raisonnements humains vont produire. Cette façon de faire
@@ -192,16 +193,16 @@ Une machine à états est flexible, on l'adapte en fonction du besoin. Un
 itérateur, un générateur ou encore un analyseur sont des types de machines à
 états. Parfois, un simple appel à un timeout peut en cacher une :
 "en cours -> annulé", "ouvert -> fermé". Mais parmi tous, l'analyseur est un
-cas particulier. Un parseur suppose une fin à ces états. Que le programme soit
+cas particulier. Un parseur suppose une fin à ses états. Que le programme soit
 écrit à l'aide d'un générateur ou avec la méthode des combinaisons, on attend
-des états qu'ils se résolvent et pour finir qu'ils arrivent à l'état ultime :
+des états qu'ils se résolvent et, pour finir, qu'ils arrivent à l'état ultime :
 la sortie du programme avec succès.
 
 Pourtant, avec la méthode React, on peut écrire des itérateurs, des
-parseurs, toute sorte de machines à états finies et infinies. C'est pour cette
+parseurs et toute sorte de machines à états finies et infinies. C'est pour cette
 raison qu'elle est extrêmement efficace pour la gestion d'une application.
-Faire avancer ses états avec React se résume à empiler des événements, les
-traiter un par un afin et appliquer les modifications adéquates.
+Faire avancer ses états avec React se résume à empiler des événements et les
+traiter un par un afin d'appliquer les modifications adéquates.
 
 Les morceaux de codes qui suivront font partie d'une expérience : créer une
 bibliothèque de zéro, avec les mêmes attentes qu'on pourrait avoir de React. Le
@@ -229,7 +230,7 @@ développement du projet, un diagramme d'états suffira pour comprendre la
 logique de l'application, ce qui est très agréable.
 
 La figure ci-dessous montre l'implémentation de chacune des étapes de
-l'automate. Les lignes A2 et B3 montre comment changer d'état après une
+l'automate. Les lignes A2 et B3 montrent comment changer d'état après une
 execution. La ligne C3 modifie un contexte en incrémentant un compteur pour
 l'itération suivante. Les autres lignes sont des effets de bord.
 
@@ -288,7 +289,7 @@ Voici comment une machine à états infinie pourrait s'implémenter. La complexi
 (absurde) de l'exemple par rapport à l'objectif montre comment on peut se
 défaire d'une série de conditions et d'intrications de monades. Par exemple,
 l'optimisation de la routine `before` qui en premier lieu retourne forcément 0,
-n'ayant aucune entrée à lire, ne fera rien, puis se met à jour pour faire
+n'ayant aucune entrée à lire, ne fera d'abord rien, puis se mettra à jour pour faire
 quelque chose. Dans un projet plus réaliste, ces petites différences sont
 importantes. Elle permet de contrôler à chaque état les effets de bord
 nécessaires ou superflus, variants et invariants.
@@ -298,8 +299,8 @@ nécessaires ou superflus, variants et invariants.
 Je n'ai pas encore parlé d'une partie importante de l'exemple : la lecture de
 l'entrée utilisateur. C'est-à-dire l'endroit où j'appelle la méthode `dispatch`
 associée à la machine à états. Cette méthode ajoute dans une file un nouvel
-objet qui appelera une fonction de réduction, ou mettra à jour l'état actuel
-selon qu'on ai utilisé `use_state` ou `use_reducer`.
+objet associé à une fonction de réduction, selon qu'on ai utilisé `use_state`
+ou `use_reducer`.
 
 ```c
 void *scan(void *_re)
@@ -319,7 +320,7 @@ asynchrone ou parallèle. Il est donc important de se poser quelques questions
 sur la résistance du modèle face au parallélisme.
 
 Dans ce programme simple, j'ai de la chance pour deux raisons. La première est
-que _scanf_ en C a une implémentation telle que, même si plusieurs threads
+que `scanf` en C a une implémentation telle que, même si plusieurs threads
 écoutent en même temps, seulement l'un d'entre eux se réveillera avec un
 buffer. Mais imaginons que le programme écoute plusieurs entrées différentes,
 comme des appels réseau ou des notifications de l'OS. Les opérations d'enfilage
@@ -329,7 +330,7 @@ synchronisation.
 Pour résoudre les problèmes liés au parallélisme dans un modèle de machine à
 états, on peut utiliser des techniques de partage de données appelées *X
 producteur(s) Y consommateur(s)* où *X* et *Y* peuvent prendre la forme de
-"unique" ou "multiple". Il en existe de nombreuses implémentations et approches
+"unique" ou "multiple". Il existe de nombreuses implémentations et approches
 différentes, au moins une par bibliothèque standard. Celle qui est implémentée
 dans la bibliothèque Reagir, la mienne, n'est peut-être pas la plus efficace,
 mais elle est facile à comprendre pour commencer.
@@ -370,10 +371,10 @@ void dispatch(struct Reaction *rea, void *arg)
 
 Lorsqu'on appelle la fonction `dispatch`, on créé une nouvelle entrée qui sera
 traitée par la bibliothèque pour passer d'un état à un autre. La fonction
-`dispatch` prend en argument la structure `React\nion` qui représente la
+`dispatch` prend en argument la structure `Reaction` qui représente la
 machine à états que l'on souhaite altérer, ainsi qu'un second argument qui peut
 être un nouvel état (si on utilise `use_state`) ou une action (si on utilise
-`use_reducer`). Cela permet de continuer à avancer dans la machine à états en
+`use_reducer`). Cela permet de continuer à avancer pas à pas en
 enfilant des fonctions de réduction qui seront appelées séquentiellement avec
 leurs arguments. En d'autres termes, cela consiste à enfiler des foncteurs.
 
@@ -389,8 +390,9 @@ l'exécution de la boucle de la machine à états, ou même avant. À aucun mome
 je peux envoyer un événement ET en recevoir simultanément. Les lignes S2, S9 R1
 et R8 sont donc inutiles dans ce cas. Malgré tout, les lignes S3, S4, S8 et R2,
 R3 et R7 sont encore nécessaires pour ne pas faire boucler le CPU sans raisons.
-Si vous n'êtes pas familier avec ce mécanisme, je propose de vous documenter
-sur les variables conditionnelles et leurs usages.
+Si vous n'êtes pas familier avec ce mécanisme, je vous propose de vous
+documenter sur les variables conditionnelles et leurs usages avant de
+continuer.
 
 <!-- Un petit paragraphe sur les variables conditionnelles devrait
      être en bonus -->
@@ -405,19 +407,19 @@ retirer les *mutexes*. Des appels parallèles auraient des résultats
 imprévisibles. Par mesure de sécurité, il faut toujours entourer les variables
 conditionnelles par des verrous. Tenez ça pour une règle d'or.
 
-Dans ce cas, je retire quelques utilisations de mutex et ça marche. Mais nous
+Dans ce cas, je retire quelques utilisations de mutexes et ça marche. Mais nous
 nous bornerons à des systèmes *mono-threadé*. L'implémentation naïve ne suffit
 pas dans les cas suivants. Si on souhaite quelque chose de plus puissant qui
 nous autorise des lectures et écritures parallèles, il faut se tourner vers des
 structures plus efficaces. Dans un contexte où on recevrait des évenements trop
 rapidement, une structure de données non-bloquante pourrait être intéressante.
 Il y a un grand nombre d'implémentation possible, encore, à commencer par celle
-qui utilise deux mutex différents pour la tête de file et son bout. Les
+qui utilise deux mutexes différents pour la tête de file et son bout. Les
 producteurs se partageraient un verrou et le consommateur sera plus rapide à
 lire, ayant le monopole sur le défilement.
 
 Plus rapide encore, une version de la file de *Michael & Scott* propose une
-solution n'utilisant aucun mutex. L'algorithme tire avantage des fonctions
+solution n'utilisant aucun mutex. L'algorithme tire avantage des capacités
 atomiques du processeur. En d'autres termes, la lecture ou l'écriture d'une
 variable sera organisé parmi les différents threads dans un ordre spécifié.
 
@@ -425,12 +427,12 @@ variable sera organisé parmi les différents threads dans un ordre spécifié.
 
 Une opération atomique, c'est lire, écrire, effectuer une opération basique
 comme un `ET` ou un `OU`, sur une petite partie de la mémoire comme par exemple
-là où se trouve un entier. Cette opération garantie qu'aucun autre thread du
-même programme va essayer de lire ou écrire pendant le temps de l'opération.
-Enfin, ces opérations garantissent que le processeur respectera un certain
-ordre défini par les instructions, éloignant les comportements indéfinis. De
-cette manière, un programme comme décrit ci-dessous aura une fin déterministe
-alors qu'un programme similaire avec une incrémentation non-atomique serai
+là où se trouve un entier. Cette opération garantie qu'aucun autre thread va
+essayer de lire ou écrire pendant le temps de l'opération. Enfin, ces
+opérations garantissent que le processeur respectera un certain ordre défini
+par les instructions, éloignant les comportements indéfinis. De cette manière,
+un programme comme décrit ci-dessous aura une fin déterministe alors qu'un
+programme similaire avec une incrémentation non-atomique serai
 non-deterministe.
 
 ```rust
@@ -450,22 +452,22 @@ est atomique. Prenons l'instruction `mov` sur `x86`. Cette instruction est
 courante dans un programme, elle peut être produite par une assignation de
 variable ou encore un passage d'argument. Cette instruction permet selon son
 utilisation de copier une valeur ou de copier l'adresse de cette valeur. C'est
-la différence entre un déplacement *par copie* ou par *référence*. Elle peut
+la différence entre un déplacement *par copie* ou *par référence*. Elle peut
 être utilisée pour lire ou écrire, selon le sens dans lequel on place les
 arguments. Lorsqu'une instruction de lecture est exécutée, elle a un
-comportement similaire à l'ordonancement défini par *ACQUIRE* et lorsqu'une
+comportement similaire à l'ordonancement défini par `ACQUIRE` et lorsqu'une
 instruction d'écriture est exécutée, elle a un comportement similaire à
-l'ordonancement défini par *RELEASE*. Ce, sans avoir besoin de préciser quoi
-que ce soit. En fait sur `x86`, l'ordonnancement *RELAXED* est chimérique.
-C'est-à-dire que les compilations d'opérations atomiques avec le flag *RELAXED*
+l'ordonancement défini par `RELEASE`. Ce, sans avoir besoin de préciser quoi
+que ce soit. En fait sur `x86`, l'ordonnancement `RELAXED` est chimérique.
+C'est-à-dire que les compilations d'opérations atomiques avec le flag `RELAXED`
 produiront le même résultat que des opérations dites non-atomique ou des
-opérations atomiques *ACQUIRE/RELEASE*.
+opérations atomiques `ACQUIRE/RELEASE`.
 
 Toutes les opérations de lecture et d'écriture, dans un certain sens, sont donc
 "atomiques" sur `x86`. Mais ce n'est pas le cas pour tous les processeurs. Sur
 certains macs, ou quelques consôles de jeu, qui ont un processeur `ARM`, on
 devra utiliser des instructions telle que `dmb` (data memory barrier) pour
-préciser un ordre *ACQUIRE-RELEASE*. L'instruction `dmb` garantit que toutes
+préciser un ordre `ACQUIRE/RELEASE`. L'instruction `dmb` garantit que toutes
 les instructions de lecture ou écriture en mémoire exécutées avant elle soient
 bien terminées avant que de passer à d'autre instructions utilisant la même
 variable. Il convient alors de dire, en écrivant du code plus haut niveau,
@@ -1152,8 +1154,6 @@ implémentation qui est plus rapide dans 99% des cas et extrêmement coûteux da
 le dernier a sa place dans une bibliothèque standard. C'est pourquoi on peut
 aussi espérer détecter une inconsistance (S7-S9), car dans ce cas, on sait
 comment réagir au mieux et améliorer, du fait, une moyenne de vitesse d'execution.
-
-// todo reprendre première relecture ici
 
 ## Chapitre 8 - Machine à états industrielle
 
