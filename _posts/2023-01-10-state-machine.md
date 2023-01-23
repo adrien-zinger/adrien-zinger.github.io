@@ -169,8 +169,21 @@ complexes en fonction d'un contexte. Avec `useState`, on se limite à prendre
 pour argument un état initial, il utilise sa propre fonction de réduction où le
 paramètre `action` sera le nouvel état.
 
+<!-- Ajouts apres relecture Yvan -->
+L'idée n'est pas tout a fait de reproduire React dans son integralité, ni d'entrer
+dans des concepts d'effets algébriques, mais bien de reprendre certaines bases qui
+pourraient donner des résultats visuellement identiques.
+
+```js
+function basicStateReducer<S>(state: S, action: BasicStateAction<S>): S {
+  // $FlowFixMe: Flow doesn't like mixed types
+  return typeof action === 'function' ? action(state) : action;
+}
+```
+
+<!-- -->
 Le fonctionnement d'une machine à états similaire React est alors décrit par des
-structures génériques de foncteurs dans une file et une fonction de transition si
+structures génériques dans une file et une fonction de transition si
 nécessaire.
 
 ```js
@@ -376,7 +389,7 @@ machine à états que l'on souhaite altérer, ainsi qu'un second argument qui pe
 être un nouvel état (si on utilise `use_state`) ou une action (si on utilise
 `use_reducer`). Cela permet de continuer à avancer pas à pas en
 enfilant des fonctions de réduction qui seront appelées séquentiellement avec
-leurs arguments. En d'autres termes, cela consiste à enfiler des foncteurs.
+leurs arguments. En d'autres termes, cela consiste à enfiler des monades.
 
 Prenons un peu le temps de lire l'algorithme de la figure précédente. On
 remarque que ce code contient plusieurs verrous. Un verrou coûte du temps au
@@ -462,17 +475,31 @@ que ce soit. En fait sur `x86`, l'ordonnancement `RELAXED` est chimérique.
 C'est-à-dire que les compilations d'opérations atomiques avec le flag `RELAXED`
 produiront le même résultat que des opérations dites non-atomique ou des
 opérations atomiques `ACQUIRE/RELEASE`.
-
+ 
 Toutes les opérations de lecture et d'écriture, dans un certain sens, sont donc
 "atomiques" sur `x86`. Mais ce n'est pas le cas pour tous les processeurs. Sur
 certains macs, ou quelques consôles de jeu, qui ont un processeur `ARM`, on
 devra utiliser des instructions telle que `dmb` (data memory barrier) pour
 préciser un ordre `ACQUIRE/RELEASE`. L'instruction `dmb` garantit que toutes
 les instructions de lecture ou écriture en mémoire exécutées avant elle soient
-bien terminées avant que de passer à d'autre instructions utilisant la même
-variable. Il convient alors de dire, en écrivant du code plus haut niveau,
-comme du _Rust_ ou du _C_, que toutes les opérations sont non-atomique tant que
-le développeur ne précise rien de tel.
+bien terminées avant que de passer à d'autre instructions. Il convient alors de
+dire, en écrivant du code plus haut niveau, comme du _Rust_ ou du _C_, que
+toutes les opérations sont non-atomique tant que le développeur ne précise rien
+de tel.
+
+<!-- Ajout apres relecture d'Yvan -->
+En ce qui concerne les variables anotée avec le mot-clef `volatile`, il n'y a
+pas de différence particulière. Cependant, la compilation va faire en sorte de
+toujours utiliser l'adresse et la variable réelle sans optimiser grâce à des
+variables temporaires ou en la remplaçant à la compilation par une logique plus
+appropriée, après du tree shaking par exemple. Le compilateur est donc
+simplement informé du fait que la variable est sucéptible de changer dans
+d'autres executions parallèles. Il est important de dire que les instructions
+produite resterons souvent les mêmes qu'avec des variables globales basiques,
+et que le compilateur ne génèrera aucune barrière mémoire comme il pourrait le
+faire avec des variables atomiques. Cela dit, l'utilisation de ce genre de
+mot-clef se perd avec le temps et peut varier d'un langage à un autre.
+<!--  -->
 
 Le processeur, pour plusieurs raisons, peut avoir le droit de superposer des
 opérations sur un même thread. C'est ce qu'on appelle l'out-of-order (*OOO*).
@@ -516,6 +543,12 @@ réalité, c'est exactement le but recherché. Un processeur *OOO* peut
 potentiellement exécuter simultanément les opérations suivantes : la lecture de
 la mémoire à l'adresse *ip*, les affectations des variables *c* en cache, et les
 accès aux différents tableaux.
+
+<!-- Apres relecture d'Yvan
+    Je ne sais pas comment préciser que le CPU attend un temps considéré comme
+    raisonnable, genre 100 clock iterations pour verifier les accès atomiques
+    parallèles et les réorganiser.
+-->
 
 Une variable peut être atomique dans le cas où elle est assez petite. Elle est
 généralement un type primitif, un pointeur, sur 32 ou 64 bits. On peut lui

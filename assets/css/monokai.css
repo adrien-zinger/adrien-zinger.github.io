@@ -5,7 +5,7 @@
 
 .highlight * {
     font-family: monospace !important;
-    font-size: 14px !important;
+    font-size: 14px;
     line-height: normal;
 }
 
@@ -302,10 +302,6 @@
 .highlight .il {
     color: #ae81ff
 }
-
-/* Literal.Number.Integer.Long */
-
-.highlight .gh {}
 
 /* Generic Heading & Diff Header */
 .highlight .gu {
