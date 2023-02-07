@@ -1,7 +1,11 @@
 ---
 layout: default
 title: "State machine and async queue (French)"
-description: ""
+description: "TL;DR
+Article, essai, présentation non-exhaustive, je présente ici un peu de programmation multithreadé et d'implémentation de machine à états. Si j'échoue à faire comprendre pour quelles raisons une machine à états
+correspond à votre cas d'usage, ces chapitres pourront être intéressants au
+moins pour les sujets variés qu'ils abordent: algorithmie, l'atomique, les problématiques.
+"
 
 authors: ["Adrien Zinger"]
 scripts: ""
