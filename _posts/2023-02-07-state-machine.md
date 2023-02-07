@@ -13,7 +13,11 @@ comments_id: 12
 published: true
 ---
 
-<span class="web" style="color: #A0A0A0">[2022-12-01] \#Design_pattern \#State_machine \#Code
+<h1 class="web">State machine and async queue (French)</h1>
+
+<span class="web" style="color: #A0A0A0">[2023-02-07] \#Design_pattern \#State_machine \#Code
+</span>
+
 <div class="print">
     <h1 style="text-align: center;">Machines à états (première partie)</h1>
     <h2 style="text-align: center;">Multithreading, atomicité et files non-bloquantes</h2>
