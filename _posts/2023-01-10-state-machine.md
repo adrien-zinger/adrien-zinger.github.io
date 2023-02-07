@@ -225,13 +225,13 @@ volontairement complexe (à ne pas refaire chez soi).
 
 Voici le comportement attendu :
 
-// todo remplacer avec un diagramme d'états.
-
 1. la sortie standard affichera `waiting for an entry`.
 2. `you wrote: ${entrée}` suivit de `Can you write something else?`.
 3. `you wrote: ${entrée}` puis `Can you write something else? (${compteur})`.
-4. répéter à partir de 3.
-5. Le programme devra s'arrêter à la lecture du mot clef _"exit"_.
+    Puis répéter à partir de 3.
+
+Le programme devra s'arrêter à la lecture du mot clef _"exit"_. Et avancera à chaque
+lecture d'une entrée utilisateur.
 
 Je commence par créer une structure `State` représentant un état contenant une
 méthode appliquant une des étapes du programme et certaines variables
@@ -242,6 +242,11 @@ programme (1, 2 ou 3 et plus). Visuellement, il suffira de lire une fonction
 pour comprendre ce qu'un état va avoir comme effet de bord. Pour le
 développement du projet, un diagramme d'états suffira pour comprendre la
 logique de l'application, ce qui est très agréable.
+
+<p align="center">
+  <img width="400" src="/assets/img/state_machine_1/diagrame_d_etats_1.png">
+</p>
+
 
 La figure ci-dessous montre l'implémentation de chacune des étapes de
 l'automate. Les lignes A2 et B3 montrent comment changer d'état après une
@@ -463,27 +468,24 @@ main():
 ```
 
 <!-- Ajout après relecture Yvan -->
-<span class="add-after-yvan">
 On associera toujours une opération atomique à ce qu'on appelle un
 ordonnancement. Avant de poursuivre ce chapitre, il est important d'en préciser
 quelques caractéristiques. Par exemple, une opération de lecture, également
 appelée chargement, peut être soumise à un ordonnancement nommé `ACQUIRE`.
 Cette opération respectera certaines contraintes, lesquelles sont :
 
-<span class="add-after-yvan">
 1. Il est impossible pour le processeur de réordonner les lectures ou écritures
    après le chargement de la variable.
 2. Les écritures effectuées dans d'autres threads sont visibles pour le thread
    lecteur.
 
-<span class="add-after-yvan">
 La première règle est garantie par des instructions de barrières mémoire qui
 permettent de maintenir un ordre cohérent entre le programme écrit et son
 interprétation par le processeur. Le deuxième point est plus complexe, car il
 permet au thread courant d'établir un ordre chronologique et les relations
 *"arrive avant"* entre les accès à une variable. Le thread qui charge une
-variable dans une zone mémoire A interprètera chronologiquement chaque écriture
-dans des threads parallèles afin de trouver la dernière valeur dans A.
+variable dans une zone mémoire "A" interprètera chronologiquement chaque
+écriture dans des threads parallèles afin de trouver la dernière valeur dans A.
 Cependant, les relations *arrivé avant* sont des interprétations qui ne
 concernent que le thread courant. Du fait, d'autres threads peuvent avoir une
 vision chronologique différente des événements. Les autres ordonnancements
@@ -580,7 +582,6 @@ accès aux différents tableaux.
 -->
 
 <!-- Apres relecture d'Yvan -->
-<span class="add-after-yvan">
 Parmi les différents ordonnancements possibles, celui qui contraint le plus la
 sémantique d'un programme est `SeqCst` (Séquentiellement Consistant). Chaque
 paire d'opérations atomiques `SeqCst` a le même comportement qu'une paire
@@ -622,7 +623,6 @@ main():
     assert(z != 0) // Peut rater
 ```
 
-<span class="add-after-yvan">
 Le pseudocode ci-dessus est un extrait de la documentation des ordonnancements
 mémoires en c++. Il est probable qu'en tant que lecteur, vous n'ayez pas prêté
 suffisamment d'attention à la phrase <i>"D'autres threads peuvent avoir une
@@ -631,7 +631,6 @@ vision chronologique différente des événements"</i>, lors de la présentation
 celui ou celle qui formule une explication, en répétant par exemple. Donc,
 arrêtons-nous sur cet algorithme.
 
-<span class="add-after-yvan">
 Si j'utilisais par défaut l'ordre défini par `ACQUIRE-RELEASE`, les threads
 `th3` et `th4` auraient potentiellement une vision différente de l'historique
 des accès aux variables `x` et `y`, car elles ont étés modifiées par deux
@@ -641,16 +640,17 @@ résoudre les *data races* entre ces threads. Autrement dit, si pour `th3`
 l'écriture de `x` est *séquentiellement avant* l'écriture de `y` alors pour
 `th4` aussi.
 
-<span class="add-after-yvan">
 Notez également que la garantie d'une contrainte d'ordonnancement quelle
 qu'elle soit est toujours rompue lorsqu'un accès à la zone mémoire est
 non-atomique ou possède des contraintes moins élevées. On en déduit donc qu'une
 lecture `SeqCst` N aura pour résultat soit la dernière valeur écrite par une
 modification `SeqCst` M dans *S*, soit toute autre valeur écrite par une
-modification non-atomique, `RELEASE` ou `RElAXED` effectuée entre M et N qui
+modification non-atomique, `RELEASE` ou `RELAXED` effectuée entre M et N qui
 n'est pas dans *S*.
 
-// todo shema seqcst
+<p align="center">
+  <img width="400" src="/assets/img/state_machine_1/seqcst_atomic_order.png">
+</p>
 
 <!-- -->
 
@@ -668,8 +668,8 @@ avancés.
 
 Il existe certains cas où tout se déroule au mieux, même sans préciser
 l'atomicité dans le code, ou avec des ordonnancements plus faibles que
-`SeqCst`. Notamment sur des processeurs `x86`. Cela devient intéressant de savoir
-pourquoi et comment le mécanisme se traduit en instructions.
+`SeqCst`. Notamment sur des processeurs `x86`. Cela devient intéressant de
+savoir pourquoi et comment le mécanisme se traduit en instructions.
 
 Pour observer les instructions qu'un processeur Intel peut comprendre, on peut
 commencer par écrire avec un langage haut niveau les différents concepts
@@ -749,12 +749,12 @@ void *consumer_thread(void *counter)
 
 Cette fois-ci, plus de mutex ni de verrouillage. On utilise une opération
 atomique basique `fetch_add` qui va, sans surprise, incrémenter la valeur du
-compteur. `fetch_add` produit sur ma machine la ligne instruction 
-`lock xaddl %edx, (%rax)`. C'est une opération d'addition entre `edx` et `rax`,
-avec le préfixe `lock`. Ce préfixe permet entre autres de préciser au processeur
-que la valeur de la cible ne peut ni être changée ni lue pendant l'incrémentation.
-Utiliser cette fonction est considéré comme `wait-free` si vous êtes familier
-avec les types d'algorithmes multithreadés.
+compteur. `fetch_add` produit sur ma machine la ligne instruction <code>lock
+xaddl %edx, (%rax)`</code>. C'est une opération d'addition entre `edx` et
+`rax`, avec le préfixe `lock`. Ce préfixe permet entre autres de préciser au
+processeur que la valeur de la cible ne peut ni être changée ni lue pendant
+l'incrémentation. Utiliser cette fonction est considéré comme `wait-free` si
+vous êtes familier avec les types d'algorithmes multithreadés.
 
 La version ci-dessus nous empêche d'avoir plusieurs producteurs. Effectivement,
 on risque d'avoir une variable temporaire `c` qui ne soit plus la bonne,
@@ -766,7 +766,7 @@ des boucles infinies.
 La dernière version ci-dessous n'utilise même plus d'opérations atomiques et
 fonctionne parfaitement. Cette version ne marche que parce que les instructions
 `mov` ont le même comportement entre eux que des variables atomiques avec
-les ordonnancements `ACQUIRE/RELEASE` sur un processeur Intel. De plus, le contexte
+les ordonnancements `ACQUIRE-RELEASE` sur un processeur Intel. De plus, le contexte
 n'a que deux threads.
 
 ```c
@@ -785,9 +785,9 @@ void *consumer_thread(void *counter)
 }
 ```
 
-En pratique, que l'on utilise `RELAXED` ou `ACQUIRE/RELEASE` ne change rien. Cela dit,
-utiliser l'ordonnancement par défaut, `SeqCst`, reste la meilleure des
-pratiques. Ne vous risquez pas trop à changer cette règle pour des bouts de
+En pratique, que l'on utilise `RELAXED` ou `ACQUIRE-RELEASE` ne change rien.
+Cela dit, utiliser l'ordonnancement par défaut, `SeqCst`, reste la meilleure
+des pratiques. Ne vous risquez pas trop à changer cette règle pour des bouts de
 chandelle de performance.
 
 Cette version ne permet pas du tout d'avoir de multiples producteurs. On
@@ -819,63 +819,57 @@ atomic_fetch_add(&i, 1);
 ```
 
 <!-- Ajout après relecture Yvan -->
-<span class="add-after-yvan">
-Cette figure présente plusieurs classes d'algorithmes. Précisons que ces
-exemples n'ont de sens que dans des systèmes concurrents, où ils peuvent
-interférer simultanément avec d'autres composants ayant des effets sur des
-éléments communs. Les noms ou les caractéristiques associées à ces classes sont
-organisés selon l'ordre suivant: un algorithme *wait-free* est également
-*lock-free*, et un algorithme *lock-free* est également *obstruction-free*.
-Avant de détailler ces termes afin d'en comprendre leur signification, il est
-utile de souligner un point important. En effet, le fait de nommer une routine
-*wait-free*, *lock-free* ou *obstruction-free* indique le comportement garanti
-par celle-ci. Cependant, chaque catégorie présente des faiblesses absentes dans
-les catégories supérieures. Par exemple, un algorithme *obstruction-free* peut
-avoir des inconvénients alors qu'un algorithme *wait-free* n'en aura pas. En
-outre, on entend ici qu'un tel algorithme pourra interferer avec au moins un
-homologue de lui-même sur des threads parallèles.
-
-<span class="add-after-yvan">
-À présent que le contexte d'utilisation de ces termes est claire, nous pouvons
-les définir sans ambiguïtés. Commençons par la classe d'algorithme
-*obstruction-free*, cette classe, donc, décrit une routine qui garantit que :
-si elle est seule à s'éxecuter sur son système durant son intervalle d'action,
-alors elle pourra faire avancer son état sans être interrompue.  Cependant, si
-d'autres routines s'exécutent en parallèle, une routine de cette classe peut
-être bloquée soit par l'utilisation d'un verrou, soit par une stratégie de
-veille particulière. La durée de ce blocage, bien qu'habituellement brève, est
-indéterminée. Finalement, le plus grand défaut de ce type de routine est son
-incapacité à faire avancer son propre état lors d'une interférence.
-
-<span class="add-after-yvan">
-La classe supérieure *lock-free* est moins contraignante. Elle est bien plus
-préférable dans la majeure partie des cas, bien qu'elle ne se prête pas à tous
-les scénarios. Elle garantit pour une routine que : si elle s'éxecute en
-parallèle d'une copie d'elle-même ou d'autres parties de l'algorithme, alors
-parmi les différentes exécutions en cours sur le système (elle comprise) une
-pourra terminer lors d'un certain nombre de ses étapes. Elle tentera toujours
-de faire avancer son propre état, quitte à recommencer du début. Contrairement
-à un algorithme *obstruction-free*, elle est potentiellement capable d'agir sur
-elle-même. C'est-à-dire qu'elle peut, dans une situation d'attente, s'arrêter,
-s'annuler, continuer ou recommencer, sans intervention extérieure.
-
-<span class="add-after-yvan">
-Les algorithmes de la classe *"wait-free"* ne se préoccupent pas des autres
-threads. Les conflits d'accès simultanés sont gérés à un niveau plus bas par le
-processeur. Par exemple, grâce à une instruction atomique *"read-and-write"*
-qui protège une variable pendant la lecture, la mise à jour et l'écriture telle
-que `fetch_add`. De même, les instructions `swap` ou `store` modifient une
-variable sans se soucier de conditions particulières. Contrairement à une
-classe d'algorithmes *"lock-free"*, qui doit attendre pour réaliser des effets
-de vérifier si des accès concurents ont eu lieu, et le cas échéant recommencer,
-une routine *"wait-free"* se termine sans tenir compte des autres threads
-concurrents. En d'autres termes, si elle est exécutée en parallèle avec une
-copie d'elle-même ou d'autres parties de l'algorithme qui partage la même
-structure de données, elle se terminera avec succès.
-
-
+> Cette figure présente plusieurs classes d'algorithmes. Précisons que ces
+> exemples n'ont de sens que dans des systèmes concurrents, où ils peuvent
+> interférer simultanément avec d'autres composants ayant des effets sur des
+> éléments communs. Les noms ou les caractéristiques associées à ces classes sont
+> organisés selon l'ordre suivant: un algorithme *wait-free* est également
+> *lock-free*, et un algorithme *lock-free* est également *obstruction-free*.
+> Avant de détailler ces termes afin d'en comprendre leur signification, il est
+> utile de souligner un point important. En effet, le fait de nommer une routine
+> *wait-free*, *lock-free* ou *obstruction-free* indique le comportement garanti
+> par celle-ci. Cependant, chaque catégorie présente des faiblesses absentes dans
+> les catégories supérieures. Par exemple, un algorithme *obstruction-free* peut
+> avoir des inconvénients alors qu'un algorithme *wait-free* n'en aura pas. En
+> outre, on entend ici qu'un tel algorithme pourra interferer avec au moins un
+> homologue de lui-même sur des threads parallèles.
+> 
+> À présent que le contexte d'utilisation de ces termes est claire, nous pouvons
+> les définir sans ambiguïtés. Commençons par la classe d'algorithme
+> *obstruction-free*, cette classe, donc, décrit une routine qui garantit que :
+> si elle est seule à s'éxecuter sur son système durant son intervalle d'action,
+> alors elle pourra faire avancer son état sans être interrompue.  Cependant, si
+> d'autres routines s'exécutent en parallèle, une routine de cette classe peut
+> être bloquée soit par l'utilisation d'un verrou, soit par une stratégie de
+> veille particulière. La durée de ce blocage, bien qu'habituellement brève, est
+> indéterminée. Finalement, le plus grand défaut de ce type de routine est son
+> incapacité à faire avancer son propre état lors d'une interférence.
+> 
+> La classe supérieure *lock-free* est moins contraignante. Elle est bien plus
+> préférable dans la majeure partie des cas, bien qu'elle ne se prête pas à tous
+> les scénarios. Elle garantit pour une routine que : si elle s'éxecute en
+> parallèle d'une copie d'elle-même ou d'autres parties de l'algorithme, alors
+> parmi les différentes exécutions en cours sur le système (elle comprise) une
+> pourra terminer lors d'un certain nombre de ses étapes. Elle tentera toujours
+> de faire avancer son propre état, quitte à recommencer du début. Contrairement
+> à un algorithme *obstruction-free*, elle est potentiellement capable d'agir sur
+> elle-même. C'est-à-dire qu'elle peut, dans une situation d'attente, s'arrêter,
+> s'annuler, continuer ou recommencer, sans intervention extérieure.
+> 
+> Les algorithmes de la classe *"wait-free"* ne se préoccupent pas des autres
+> threads. Les conflits d'accès simultanés sont gérés à un niveau plus bas par le
+> processeur. Par exemple, grâce à une instruction atomique *"read-and-write"*
+> qui protège une variable pendant la lecture, la mise à jour et l'écriture telle
+> que `fetch_add`. De même, les instructions `swap` ou `store` modifient une
+> variable sans se soucier de conditions particulières. Contrairement à une
+> classe d'algorithmes *"lock-free"*, qui doit attendre pour réaliser des effets
+> de vérifier si des accès concurents ont eu lieu, et le cas échéant recommencer,
+> une routine *"wait-free"* se termine sans tenir compte des autres threads
+> concurrents. En d'autres termes, si elle est exécutée en parallèle avec une
+> copie d'elle-même ou d'autres parties de l'algorithme qui partage la même
+> structure de données, elle se terminera avec succès. 
 <!---->
-
+ 
 Revenons aux ordonnancements. Spécifier un ordre dans lequel les threads vont
 accéder à une variable et les contraintes sur un seul thread est possible dans
 quasiment tout les langages permettant la parallélisation des exécutions. En
@@ -911,12 +905,12 @@ où la modification de `atomic_bool` est garantie d'être faite après celle de
 `val` dans A, et à l'inverse, la lecture de `atomic_bool` est garantie d'être
 faite avant celle de `val` dans B.
 
-Une écriture avec un ordre atomique `Release` implique qu'aucune écriture ou
+Une écriture avec un ordre atomique `RELEASE` implique qu'aucune écriture ou
 lecture dans le même thread ne peut être réorganiser par le processeur après le
 stoquage, que l'opération soit atomique ou non-atomique. Autrement dit, ce qui
 est écrit ou lu avant sera vraiment écrit ou lu avant. De plus, toute écriture
 dans une variable devient visible par tous les autres threads voulant lire avec
-un ordre atomique `Acquire`. Pour résumer simplement, `val` est comme protégée
+un ordre atomique `ACQUIRE`. Pour résumer simplement, `val` est comme protégée
 par un mutex. Cette façon d'attendre activement l'accès à une ressource
 s'appelle un *spinlock*. Très utile dans certains cas, et bien trop gourmand en
 temps de CPU dans d'autres.
@@ -940,13 +934,13 @@ continuellement. Les états de la bibliothèque Reagir sont donc quelque part su
 le tas, ou globaux. Par défaut, on les considère constants ou statiques.
 
 À l'écriture d'un programme, ce n'est pas toujours pratique d'avoir des états
-constants et immutables. Dans la plupart des exemples trouvé avec React,
-l'état est modifié au fur et à mesure. Personnellement, j'aime aussi considérer
-l'état comme une base avec laquelle je profile l'exécution, puis j'en tire
-l'état suivant si besoin. Contrairement au Rust, C me donne la liberté de créer
-des variables statiques mutables sans protections, ce qui rend d'ailleurs ce
-vieux langage non *memory safe*. En contre partie, ça me permet de ne pas à
-avoir à allouer de mémoire dynamiquement, et surtout, d'avoir un code simple.
+constants et immutables. Dans la plupart des exemples trouvé avec React, l'état
+est modifié au fur et à mesure. Personnellement, j'aime aussi considérer l'état
+comme une base avec laquelle je profile l'exécution, puis j'en tire l'état
+suivant si besoin. Contrairement au Rust, C me donne la liberté de créer des
+variables statiques mutables sans protections, ce qui rend d'ailleurs ce vieux
+langage non *memory safe*. En contre partie, ça me permet de ne pas à avoir à
+allouer de mémoire dynamiquement, et surtout, d'avoir un code simple.
 
 ```c
 void *make_init_state()
@@ -975,26 +969,26 @@ Un des choix arbitraires pris ici, est l'argument qu'on donne à la fonction
 initial, puis on utilise la référence du scope pour le reste de l'exécution. Ce
 n'est pas très pratique pour un modèle de mémoire sans *garbage collector*. Le
 choix de passer une fonction d'initialisation, malgré les contraintes du
-langage, reste arbitraire. J'imagine sans mal qu'il y ai de
-nombreuses implémentations alternatives. Certaines me viennent à l'esprit en
-écrivant ces lignes. Bien que celle-ci ne constitue pas un défaut majeur.
+langage, reste arbitraire. J'imagine sans mal qu'il y ai de nombreuses
+implémentations alternatives. Certaines me viennent à l'esprit en écrivant ces
+lignes. Bien que celle-ci ne constitue pas un défaut majeur.
 
 Vous avez peut-être remarqué une autre différence avec React qu'implique cette
 implémentation. En utilisant le framework javascript, appeler la méthode
 `dispatch` (qui permet de mettre à jour l'état) avec le même objet ne
-re-demande pas l'exécution du composant, même si cet objet a été modifié.
-Dans le cas ci-dessus, si on gardait la même logique le pointeur pour l'état
-initial ne pourrait pas être celui des états suivants. Donc ma bibliothèque est
-forcée d'accepter tout appel à `dispatch` sans vérifier la consistence ou
-l'égalité des états.
+re-demande pas l'exécution du composant, même si cet objet a été modifié. Dans
+le cas ci-dessus, si on gardait la même logique le pointeur pour l'état initial
+ne pourrait pas être celui des états suivants. Donc ma bibliothèque est forcée
+d'accepter tout appel à `dispatch` sans vérifier la consistence ou l'égalité
+des états.
 
-Je recommande tout de même de ne pas réutiliser l'état précédent dans la fonction
-de dispatch sans maîtriser ce que vous faites. Le mieux serait de pouvoir utiliser
-une variable statique par état. La raison pour laquelle il n'est pas conseillé
-de garder l'état précédent, est qu'il peut être modifié par d'autres parties de
-l'application avant que la fonction de dispatch n'ait été exécutée ou pendant
-son transit dans la file d'évènements. Dans ce cas, des *data races* peuvent
-entraîner des erreurs difficiles à déboguer.
+Je recommande tout de même de ne pas réutiliser l'état précédent dans la
+fonction de dispatch sans maîtriser ce que vous faites. Le mieux serait de
+pouvoir utiliser une variable statique par état. La raison pour laquelle il
+n'est pas conseillé de garder l'état précédent, est qu'il peut être modifié par
+d'autres parties de l'application avant que la fonction de dispatch n'ait été
+exécutée ou pendant son transit dans la file d'évènements. Dans ce cas, des
+*data races* peuvent entraîner des erreurs difficiles à déboguer.
 
 Quelques chapitres au-dessus, on a vu comment des fonctions de réduction sont
 enfilées. J'ai précisé ensuite que ces fonctions sont exécutées
@@ -1042,20 +1036,20 @@ La proposition précédente fonctionne parfaitement dans un contexte synchrone.
 Si, à tout moment de l'exécution, plusieurs threads pouvaient utiliser ces
 états créés, dans ce cas, ce bout de code est très très critique. Cependant, il
 existe des situations où les exécutions seront toujours concurrentes, jamais
-parallèles, et où ce code fonctionne en l'état. Mais cela n'est pas très générique, ce
-qui nous amène au second problème.
+parallèles, et où ce code fonctionne en l'état. Mais cela n'est pas très
+générique, ce qui nous amène au second problème.
 
 Second problème : imaginons que pendant la réception d'une nouvelle information
-la machine à états passe de l'état A à B. L'exécution vient de passer la ligne
+la machine à états passe de l'état "A" à "B". L'exécution vient de passer la ligne
 L5 (voir la figure de la boucle) et est en train d'entrer dans la fonction de
-réduction. Si un autre thread modifie A à ce moment-là, la fonction de
+réduction. Si un autre thread modifie "A" à ce moment-là, la fonction de
 réduction et cet autre thread auront un *data race*. Au mieux, l'état ne
 passera pas à B, mais la fonction de réduction ne peut pas avoir de
 comportement défini.
 
 Pour se protéger, la solution la moins évidente à réaliser, est de faire en
-sorte que le programme soit au choix résilient ou qu'il y ait un consensus entre
-les threads. L'utilisation de structures non-bloquantes, encore, permet
+sorte que le programme soit au choix résilient ou qu'il y ait un consensus
+entre les threads. L'utilisation de structures non-bloquantes, encore, permet
 d'éviter des *data races*. La fonction de réduction pourrait tenter de
 remplacer l'ancien état avec un `compare_and_swap` élaboré, et essayer de
 nouveau tant que l'opération échoue. Dans ce cas, il faut aussi se protéger
@@ -1063,12 +1057,12 @@ contre des libérations de mémoire inattendues. L'accès à une structure, auss
 atomique soit-elle, ne protège pas contre l'apparition d'un pointeur nul comme
 référence.
 
-Une manière plus simple de se protéger est l'utilisation de
-verrous. En combinant une fonction de réduction qui enclenche un verrou et la
-fonction de nettoyage pour le relacher, on peut réussir à protéger l'état
-contre des comportements indéfinis. Le verrou peut être contenu dans la
-machine à état. Dans toutes les circonstances, il n'y a toujours qu'un état courant,
-donc l'utilisation d'un verrou global est largement suffisante.
+Une manière plus simple de se protéger est l'utilisation de verrous. En
+combinant une fonction de réduction qui enclenche un verrou et la fonction de
+nettoyage pour le relacher, on peut réussir à protéger l'état contre des
+comportements indéfinis. Le verrou peut être contenu dans la machine à état.
+Dans toutes les circonstances, il n'y a toujours qu'un état courant, donc
+l'utilisation d'un verrou global est largement suffisante.
 
 ```c
 void *locker(void *_, void *new_state)
@@ -1128,7 +1122,6 @@ sont invalides dans un contexte de partage de données entre plusieurs threads
 parallèles.
 
 <!-- Ajout après relecture d'Yvan -->
-<span class="add-after-yvan">
 Avant de continuer ce chapitre, il semble nécessaire de savoir reconnaitre si
 une structure de données, ou plus généralement un algorithme qui produira des
 effets, est *thread-safe* ou non. Dans un système concurrent, composé de
@@ -1140,7 +1133,6 @@ les pertes de données, les fuites de mémoire et tout type de comportements
 imprévisibles, à condition bien sûr que ces effets ne soient pas souhaités dans
 la sémantique originale.
 
-<span class="add-after-yvan">
 Toutefois, s'il est plus ou moins facile de montrer qu'un algorithme ne remplit
 pas les conditions pour être *thread-safe* il est difficile de prouver le
 contraire sans le matériel adapté. Heureusement, il existe quelques langages
@@ -1150,18 +1142,19 @@ maîtrise pas, il serait surérogatoire de les présenter ici.
 
 <!-- -->
 
-// todo shema
+<p align="center">
+  <img width="400" src="/assets/img/state_machine_1/scenario_data_race_file_2.png">
+</p>
 
 La figure ci-dessus montre un des nombreux scénarios de désynchronisation qui
-pourraient arriver. En fait, en utilisant cette structure non protégée, ça ne se
-passera quasiment jamais bien. Si on reste dans des exécutions concurrentes, dans des
-*green threads*, pourquoi pas. Mais en incluant du parallélisme, il y a un fort
-risque de perte de données et de comportement indéfini. Dans ce cas, la
-solution la plus évidente est d'ajouter un mutex autour de la file partagée.
+pourraient arriver. En fait, en utilisant cette structure non protégée, ça ne
+se passera quasiment jamais bien. Si on reste dans des exécutions concurrentes,
+dans des *green threads*, pourquoi pas. Mais en incluant du parallélisme, il y
+a un fort risque de perte de données et de comportement indéfini. Dans ce cas,
+la solution la plus évidente est d'ajouter un mutex autour de la file partagée.
 Des solutions plus performantes entrent alors en scène.
 
 <!-- Modification des paragraphes après relecture Yvan -->
-<span class="add-after-yvan">
 L'étape suivante d'une structure de données *thread-safe*, après le grand
 mutex, c'est le status *non-bloquant* ou *lock-free*. Quand on parle
 d'algorithmes *lock-free*, on l'a vu, on veut dire que l'appel d'une routine
@@ -1176,7 +1169,6 @@ par la suite les termes *lock-free* et *non bloquant*, car il est possible
 d'obtenir dans plusieurs cas des accès parallèles de lecture et écriture à une
 même structure avec l'utilisation de mutexes.
 
-<span class="add-after-yvan">
 Pour l'implémentation d'une file adaptée à divers systèmes de producteurs et
 consommateurs, on peut utiliser une version synchrone de l'algorithme. Elle ne
 sera pas *lock-free* mais non-bloquante. Elle ressemble à ce qu'on a vu
@@ -1313,61 +1305,57 @@ if std::ptr::eq(head, tail) {                           // Q4
 implémentation en Rust de la file de Mickael & Scott</div>
 
 <!-- modif après relecture d'Yvan -->
-<span class="add-after-yvan">
-Un algorithme comme celui-ci qui aide les threads à terminer leurs opérations
-d'écriture, aide forcement la lecture à avancer. Un algorithme écrit en faisant
-attention à ces détails garantit qu'un thread pourra toujours faire avancer son
-propre état de façon indépendante et ne restera jamais bloqué par d'autres
-threads. On dit de ces algorithmes qu'ils sont *"linéarisables"*.
-
-<span class="add-after-yvan">
-Veuillez excuser l'emploi du terme technique "linéarisable", je me propose de
-vous en offrir une définition concise au sein d'une parenthèse dédiée. Pour
-commencer, toute routine d'un algorithme a un début et une fin (si la
-sémantique le demande). Si le début est simple à observer chronologiquement, la
-fin est souvent moins déterminée. La routine *Pop* ci-dessus, peut
-potentiellement finir à Q11, pour cela, elle devra préalablement valider la
-ligne Q9. En réalité, on peut affirmer que cette routine termine ses effets
-avec succes lorsque le <i>compare and swap</i> s'exécute correctement, la suite
-reste du simple utilitaire pratique. Au vu déjà de cet aspect temporel des
-appels et des retours, nous pouvons créer un historique tel que : <i>j'appelle
-push(A)</i> puis <i>A est dans la liste</i>. Combiné avec la routine *Pop* nous
-pourrions observer cette suite d'événements :
-
-<span class="add-after-yvan">
-1. push(A)
-2. A est dans la liste
-3. pop()
-4. pop retourne A
-
-<span class="add-after-yvan">
-Vous remarquerez que chaque appel d'une fonction est suivi par son résultat, ce
-qui nous rassure d'un point de vue logique. *Pop* ne retourne pas de valeur
-avant son appel, de même, la réponse <i>"A est bien dans la liste"</i> précède
-strictement le retour de *Pop*, ceci nous confirme que l'espace-temps dans
-lequel nous testons notre algorithme est bien linéaire. Autrement dit, nous
-pouvons raisonner à propos de son exactitude. Un deuxième scénario réaliste
-pourrait être : *Pop* ne retourne pas d'information en un laps de temps
-raisonnable. Comment dans ce cas juger de du déterminisme ainsi que de la
-linéarité de l'historique sémantique ? *Pop* finira-t-il un jour ? En fin de
-compte, un algorithme linéarisable doit respecter certaines contraintes
-temporelles. Il faudrait, entre autres, qu'un appel à une de ces routines
-<i>donne l'impression</i> de se terminer instantanément après son appel. Or,
-<i>"donner l'impréssion de"</i> implique une vision subjective et complexe à
-déterminer pour la plupart des algorithmes. Ceci nous amènerai à des réflexions
-trop eloignées du périmètre de l'informatique. Une seconde définition
-équivalente, plus simple à prouver, est la suivante : entre le début de la
-routine et sa fin, il doit exister une ou plusieurs étapes où la routine a fait
-effet. Pour *Pop*, par exemple Q9 peut être cette ligne à condition qu'une de
-ces itérations lui permette de faire réussir l'échange. Q9 est ici le *point de
-linéarisation* de la routine. Vous l'aurez compris, ces contraintes sont
-primordiales pour pouvoir raisonner correctement à propos d'un algorithme, et
-éviter des incohérences dans de nombreux contextes. Concluons cette parenthèse
-en dépit du fait qu'il subsiste encore un abondant corpus de réflexions à
-opérer sur ce thème.
+> Un algorithme comme celui-ci qui aide les threads à terminer leurs opérations
+> d'écriture, aide forcement la lecture à avancer. Un algorithme écrit en faisant
+> attention à ces détails garantit qu'un thread pourra toujours faire avancer son
+> propre état de façon indépendante et ne restera jamais bloqué par d'autres
+> threads. On dit de ces algorithmes qu'ils sont *"linéarisables"*.
+> 
+> Veuillez excuser l'emploi du terme technique "linéarisable", je me propose de
+> vous en offrir une définition concise au sein d'une parenthèse dédiée. Pour
+> commencer, toute routine d'un algorithme a un début et une fin (si la
+> sémantique le demande). Si le début est simple à observer chronologiquement, la
+> fin est souvent moins déterminée. La routine *Pop* ci-dessus, peut
+> potentiellement finir à Q11, pour cela, elle devra préalablement valider la
+> ligne Q9. En réalité, on peut affirmer que cette routine termine ses effets
+> avec succès lorsque le <i>compare and swap</i> s'exécute correctement, la suite
+> reste du simple utilitaire pratique. Au vu déjà de cet aspect temporel des
+> appels et des retours, nous pouvons créer un historique tel que : <i>"j'appelle
+> push(A)"</i> puis <i>"A est dans la liste"</i>. Combiné avec la routine *Pop* nous
+> pourrions observer cette suite d'événements :
+> 
+> 1. push(A)
+> 2. A est dans la liste
+> 3. pop()
+> 4. pop retourne A
+> 
+> Vous remarquerez que chaque appel d'une fonction est suivi par son résultat, ce
+> qui nous rassure d'un point de vue logique. *Pop* ne retourne pas de valeur
+> avant son appel, de même, la réponse <i>"A est bien dans la liste"</i> précède
+> strictement le retour de *Pop*, ceci nous confirme que l'espace-temps dans
+> lequel nous testons notre algorithme est bien linéaire. Autrement dit, nous
+> pouvons raisonner à propos de son exactitude. Un deuxième scénario réaliste
+> pourrait être : *Pop* ne retourne pas d'information en un laps de temps
+> raisonnable. Comment dans ce cas juger de du déterminisme ainsi que de la
+> linéarité de l'historique sémantique ? *Pop* finira-t-il un jour ? En fin de
+> compte, un algorithme linéarisable doit respecter certaines contraintes
+> temporelles. Il faudrait, entre autres, qu'un appel à une de ces routines
+> <i>donne l'impression</i> de se terminer instantanément après son appel. Or,
+> <i>"donner l'impréssion de"</i> implique une vision subjective et complexe à
+> déterminer pour la plupart des algorithmes. Ceci nous amènerai à des réflexions
+> trop eloignées du périmètre de l'informatique. Une seconde définition
+> équivalente, plus simple à prouver, est la suivante : entre le début de la
+> routine et sa fin, il doit exister une ou plusieurs étapes où la routine a fait
+> effet. Pour *Pop*, par exemple Q9 peut être cette ligne à condition qu'une de
+> ces itérations lui permette de faire réussir l'échange. Q9 est ici le *point de
+> linéarisation* de la routine. Vous l'aurez compris, ces contraintes sont
+> primordiales pour pouvoir raisonner correctement à propos d'un algorithme, et
+> éviter des incohérences dans de nombreux contextes. Concluons cette parenthèse
+> en dépit du fait qu'il subsiste encore un abondant corpus de réflexions à
+> opérer sur ce thème.
 <!-- -->
 
-Reprenons l'implémentation d'*mpsc*. Comme avec l'algorithme livelock-free
+Reprenons l'implémentation du *mpsc*. Comme avec l'algorithme livelock-free
 présenté précédemment, il n'est pas nécessaire d'utiliser de variable atomique
 pour le pointeur vers la tête de file. Si le cas d'usage nous garantit qu'un
 unique thread pourra accéder à cette fonction, pas nécessairement le même
@@ -1462,15 +1450,10 @@ plus réaliste. Cette fois-ci, la lecture de l'entrée utilisateur est parallèl
 pouvons pas garantir que les composants du système nous enverrons des
 signaux lisibles ou cohérents. L'automate ressemble à ceci :
 
-// todo shema
+<p align="center">
+  <img width="400" src="/assets/img/state_machine_1/diagrame_d_etats_2.png">
+</p>
 
-start A
-A   + "gotoB"   -> B
-A   + "gotoC"   -> C
-B|C + "gotoD"   -> D
-D   + "restart" -> A
-D   + "stop"    -> E
-E               -> quit
 
 Le code doit être clair et précis. Il est important de noter que dans le milieu
 industriel, les machines à états évoluent souvent plus rapidement que le reste
@@ -1679,7 +1662,7 @@ Cette méthode est aussi connue sous le nom de *"thread parker"*, le
 consommateur attend jusqu'à ce qu'il soit notifié, à condition de ne pas déjà
 être notifié.
 
-Notez également deux choses. Premièrement, la boucle B5, celle-ci protège d'un
+Notez également deux points. Premièrement, la boucle B5, celle-ci protège d'un
 possible *spurious wake up*, qu'on a déjà décrit, de la part du système,
 détécté par le test B7. Deuxièmement, ce n'est pas évident dans le pseudocode
 qui suit, appeler un futex aujourd'hui passe par un appel système, et donc
@@ -1707,26 +1690,41 @@ receiver_loop():
         received(e);                            // B9
 ```
 
-<!-- finir la conclusion après relecture
+## Premier récapitulatif
 
-## Récapitulatif
+Malheureusement, je ne suis pas en mesure de formuler une conclusion définitive
+à propos des machines à états ni de la programmation multithreadé, ce domaine
+étant en constante évolution (une telle conclusion est probablement
+irréalisable). Toutefois, je peux avancer quelques observations basées sur mes
+dernières lectures et conversations.
 
-En lisant divers articles durant mes recherches, je n'ai pas pu m'empêcher de
-faire le lien avec ce que Pierre Boule a si bien décrit dans son oeuvre _La
-planette des singes_. J'ai eu l'impression que les thèses écrites entre les
-années 1990 et 2010 ont eues un impacte important. Elles déteingnent nettement
-sur les articles techniques jusqu'en 2022. Et si elles n'en sont pas la source
-d'inspiration, d'autres articles répètent encore et encore les même choses.
+Au cours de mes investigations, j'ai remarqué des similitudes entre les
+développements récents et les réflexions exposées par Pierre Boule dans son
+oeuvre *"La planète des singes"*. Les travaux publiés entre 1990 et 2010
+semblent avoir eu une profonde influence sur la dernière décénie. Une
+explication plausible est que nous soyons réellement inspirés par les
+fondateurs de l'informatique, ce qui peut expliquer en partie notre tendance à
+imiter les développements antérieurs.
 
-Toujours avec une légère différence dû à la personnalité de l'écrivain, les
-postes autours des sujets qui suivent sont des immitations les unes des autres.
-Parfois, simplement, un développeur curieux découvre, comme moi, comment
-fonctionnent des outils qu'il utilise depuis une décénie. Je suis un bucheron
-qui comprend comment marche une hache. J'espère que ça n'en reste pas moins
-utile, qu'une forme de vulgarisation est parfois nécessaire. En revanche, je ne
-voudrais pas me limiter à imiter mes pères. Je souhaite tenter de combiner des
-connaissances et m'essayer à la créativité. Bien que ma créativité n'aura rien
-de novatrice et sera déjà venu à l'esprit des premiers informaticiens, je serai
-plus heureux comme ça.
+Pour ma défense, un développeur expérimenté peut parfois comprendre le
+fonctionnement d'outils qu'il utilise depuis longtemps, comme un bûcheron qui
+saisit enfin le fonctionnement de la hache qu'il manie. De plus, il peut être
+utile de vulgariser certaines connaissances pour les rendre accessibles à un
+public plus large. Cependant, nous sommes en droit de supposer que la
+connaissance peut se perdre avant d'être redécouverte de génération en
+génération. Dans ce cas, nous ferions mieux de lire les premiers travaux pour
+comprendre les erreurs du passé ainsi que les "nouvelles" techniques de
+programmation.
 
--->
+En résumé, je vous suggère d'aller plus en détail sur certains points que nous
+avons abordés. Pour comprendre les problèmes de linéarisations, vous pouvez
+lire les raisons du changement du *mpsc* de la bibliothèque standard Rust. Pour
+les machines à états, vous pouvez explorer leur utilisation dans la
+reproductibilité, le calcul à la volée et les algorithmes distribués. Vous
+pouvez également lire l'implémentation de la bibliothèque *Reagir* et
+comprendre pourquoi il serait vain de tester chaque entrée dans la routine
+`dispatch`. Vous pouvez imaginer de nouvelles implémentations en C, de
+nouvelles représentations et essayer d'autogénérer une machine à état à partir
+d'un format BNF. Enfin, vous pouvez prendre de l'avance sur mon prochain
+article en proposant des implémentations dans des langages plus modernes et les
+comparer avec les méthodes existantes ou en développement.
