@@ -94,8 +94,7 @@ master d'info.
 
 J'ai commencé par passer beaucoup de temps sur le répo de zstd de Facebook. Il
 se trouve que FSE est libre de droits, et que zstd est open source. Et il possède
-parmi d'autres une implementation à laquelle Yann Collet a participé. Il faut
-retenir ce nom pour plus tard.
+parmi d'autres une implementation à laquelle Yann Collet a participé.
 
 Comprendre par le code a souvent fonctionné chez moi. Et même si ça faisait
 quelques années où je n'avais pas fait du C. J'en ai quand même tiré certains
@@ -106,10 +105,7 @@ quelques années où je n'avais pas fait du C. J'en ai quand même tiré certain
 Étudier l'informatique grâce à ce langage est exceptionnel. Mais le C a ses
 défauts, et le manque de lisibilité en est un. Le code du FSE est super, il est
 optimal pour beaucoup de points de vu. La norme actuelle est plutôt d'utiliser
-de la monomorphisation dans une bibliothèque, ce que le C ne permet pas facilement.
-Malgré toute la bonne volonté du programmeur à expliquer son code, la
-généricité est toujours un peu spécial en C. En bref, une implémentation dans un
-autre langage ne pourrait qu'amener du positif.
+de la monomorphisation dans une bibliothèque, ce que le C ne permet pas facilement. En bref, une implémentation dans un autre langage ne pourrait qu'amener du positif.
 
 Outre le langage, sans connaître les enjeux de FSE, on fait une drôle de tête
 devant des fonctions comme celle de normalisation. Pleines de choix techniques et
@@ -120,54 +116,6 @@ Finalement, si je voulais comprendre FSE, ce n'était une bonne idée. Mais j'ai
 appris des choses, sur du langage C et de la culture G d'informaticien. C'est un
 travail qui peut être décourageant, sembler ne servir à rien, mais qui n'ait
 jamais une perte de temps.
-
-Les mois passaient...
-
-## Étudier la théorie
-
-Après avoir lutté pour comprendre de quoi FSE en retourne, j'ai pu mettre à
-profis tout ce que j'avais apris pour commencer sur des fondations solides.
-
-<div class="tex2jax_ignore">
-Yann Collet, le dev principal de FSE, a un blog. Et c'est un excellent point de
-départ théorique. Même si j'ai malheureusement eu quelques problèmes avec, des
-problèmes que je ne vous causerai pas ici (j'espère).
-</div>
-
-Pour faire simple, il y a trop d'explication... Vous savez, lorsque vous essayez
-de faire comprendre quelque chose à quelqu'un, et que surrexpliquer vous fait
-sauter des étapes ? Même en étant un maitre dans son domaine, transmettre ses
-connaissances n'est pas si facile.
-
-En tant qu'élève, vous vous rappelez ce sentiment que le modèle mental que vous
-aviez, en fin de compte, ne tient pas du tout. Vous vous rappelez ces petites
-phrases de l'enseignant qui vous font comprendre que "non, ce n'est pas ça, vous
-n'avez pas compris". Viennent ensuite ces petites phrases qui vous font croire
-que "ah? bah si, c'était ça en fait!".
-
-Voilà de quoi je parle. Si vous ne connaissez pas ce sentiment, vous n'imaginez
-pas votre chance. De cette manière, vous apprenez, vous ne comprenez pas, puis
-pour finir vous avez une note médiocre en droit du travail....
-
-Ensuite, je ne sais pas pourquoi, mais tous ceux qui parlent de cet algo
-trouvent ça amusant de commencer pas expliquer la décompression. C'est comme si
-je vous indiquais un chemin en vous disant comment revenir. Je ne comprends pas
-en quoi c'est plus simple personnellement.
-
-Enfin, j'ai été heureux d'apprendre que cet algorithme dont je vous parle depuis
-le début est issue d'une théorie qui se nomme "ANS". Qui veut joliment dire
-Asymetrique Numerical System.
-
-ANS, c'est le premier virage qu'il faut prendre pour sortir du tunnel sombre de
-l'incompréhension. Un virage qui, parce que c'est un peu rébarbatif surement,
-est officiellement indiqué comme "une chose à laquelle on peut s'intéresser plus
-tard... si on le souhaite... peut-être". J'ai sauté cette étape, obéissant que
-je suis, pour finalement comprendre un peu de travers.
-
-Je ne vous ferai pas ça ! En fait, je vais même essayer de vous guider, algo par
-algo, vers la connaissance de la compression.
-
-<br>
 
 ## Les algorithmes de compression - début du technique
 
