@@ -4,8 +4,13 @@ permalink: /
 ---
  ☕
 
-If you like my work, you can follow me on <a href="https://github.com/adrien-zinger">github</a> and watch releases of
-<a href="https://github.com/adrien-zinger/adrien-zinger.github.io">that repository</a> to follow the next articles.
+Ce blog contient des articles qui m'aident principalement à étudier des choses. En gros,
+chaque article est le résultat de notes que je prends. Qu'ils soient très long ou non, ils
+ne contiennent qu'une compilation de notes, de références, de réflexions, de vulgarisation.
+
+En espérant que ça puisse être aussi utile à quelqu'un qu'à moi, bonne lécture.
+
+Voici mon profile github: <a href="https://github.com/adrien-zinger">github</a>.
 
 ## Posts
 

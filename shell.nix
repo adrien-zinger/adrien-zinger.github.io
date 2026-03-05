@@ -2,7 +2,7 @@ with (import <nixpkgs> {});
 mkShell {
   buildInputs = [
     clang
-    ruby_3_0
+    ruby_3_4
     # (vscode-with-extensions.override {
     #   vscodeExtensions = with pkgs.vscode-extensions; [
 	  #     eamodio.gitlens
