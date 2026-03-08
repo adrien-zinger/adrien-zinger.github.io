@@ -32,27 +32,27 @@ contrats dans un langage, c'est quoi, à quoi ça sert et surtout : qu'est-ce qu
 
 ## Définition d'un contrat
 
-Un contrat dans un programme informatique, c'est une annotation sur une
-fonction de ce qui doit être respecté par l'appelant ainsi que par la fonction
-elle-même.
+Un contrat s'applique à une fonction et défini ce qui doit
+être respecté par l'appelant et par la fonction. Les paramêtres
+et la valeur de retour sont contraint de respecter les rêgles
+du contrat.
 
-Je dump ci-dessous la première phrase de Wikipédia:
+Ci-dessous la première phrase de Wikipédia:
 
 *"La programmation par contrat (en anglais, design by contract ou DBC) est un*
 *paradigme de programmation dans lequel le déroulement des traitements est*
 *régi par des règles."*
 
-Utiliser abondamment les contrats dans un programme est donc un paradigme de
-programmation comme l'orienté objet, le fonctionnel, etc. À noter que ce
-paradigme comme beaucoup d'autre est compatible avec l'usage d'autre paradigme.
+Utiliser abondamment les contrats est donc un paradigme comme l'orienté objet,
+le fonctionnel, etc. À noter que ce paradigme comme beaucoup d'autre est
+compatible avec l'usage d'autre paradigme.
 
-En C++, par exemple, faire de la programmation fonctionnelle et procédurale
-(est-ce que ce sont des synonymes ? peut-être...) n'empêche pas de faire de la
-programmation orienté objet. Au même titre qu'il n'empêchera à l'avenir
-probablement pas de faire de la programmation par contrat (C++26).
+En C++, par exemple, faire de la programmation fonctionnelle n'empêche pas
+de faire de la programmation orienté objet à côté. Au même titre qu'il
+n'empêchera pas à l'avenir de faire de la programmation par contrat (C++26).
 
-Le programme s'assure que les règles sont respéctées grâce à des assertions de
-type :
+Le language, ou votre fçon de coder vous assure que les règles suivante sont
+respéctées :
 
 - Précondition (les paramètres)
 - Postcontition (le truc à droite de `return`)
